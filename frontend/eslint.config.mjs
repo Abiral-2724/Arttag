@@ -18,7 +18,8 @@ const eslintConfig = [
       "@typescript-eslint/ban-ts-comment": "off",
       "react-hooks/exhaustive-deps": "off",// Disable the rule globally
       "@next/next/no-img-element": "off",
-      "@typescript-eslint/no-unused-vars": "off"
+      "@typescript-eslint/no-unused-vars": "off",
+      "react/no-unescaped-entities": "off",
     },
   },
 ];
