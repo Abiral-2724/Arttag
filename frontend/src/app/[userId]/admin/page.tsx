@@ -21,7 +21,7 @@ export default function AdminDashboard() {
 
   const [isChecking, setIsChecking] = useState(true);
 
-  const API_BASE_URL = 'http://localhost:8000/api/v1';
+  const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
   const { userId } = useParams();
  
 const router = useRouter() ; 
@@ -77,7 +77,7 @@ const handleviewOrder = () => {
       setLoading(true);
       setError(null);
       // Replace with your actual API endpoint
-      const response = await fetch('http://localhost:8000/api/v1/product/all/website/details');
+      const response = await fetch('https://ecommerce-v628.onrender.com/api/v1/product/all/website/details');
       const data = await response.json();
       
       if (data.success) {

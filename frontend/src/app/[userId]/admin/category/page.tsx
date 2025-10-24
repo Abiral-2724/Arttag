@@ -70,7 +70,7 @@ const CategoryManagement = () => {
   const [loadingSubcategories, setLoadingSubcategories] = useState({});
   const [isChecking, setIsChecking] = useState(true);
  
-  const API_BASE_URL = 'http://localhost:8000/api/v1';
+  const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
   const router = useRouter();
   
   useEffect(() => {

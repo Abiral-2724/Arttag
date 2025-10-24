@@ -30,7 +30,7 @@ const ShoppingCart = () => {
   
   const { userId } = useParams();
  
-  const API_BASE = "http://localhost:8000/api/v1/cart";
+  const API_BASE = "https://ecommerce-v628.onrender.com/api/v1/cart";
 
   useEffect(() => {
     fetchCartData();

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
 
 export default function WishlistSection({ wishlist, userId, onUpdate, showAlert } : any) {
   const removeFromWishlist = async (productId : any) => {

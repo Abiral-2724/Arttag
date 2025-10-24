@@ -26,7 +26,7 @@ const CategoryPage = () => {
         setError(null);
         
         const response = await axios.get(
-          `http://localhost:8000/api/v1/category/get/${categoryId}/all/subcategory`
+          `https://ecommerce-v628.onrender.com/api/v1/category/get/${categoryId}/all/subcategory`
         );
     setCategoryName(response.data.parentCategory.name)
         if (response.data.success) {

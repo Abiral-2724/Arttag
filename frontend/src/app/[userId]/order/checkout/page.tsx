@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   });
 
   const { userId } = useParams();
-  const API_BASE_URL = "http://localhost:8000/api/v1";
+  const API_BASE_URL = "https://ecommerce-v628.onrender.com/api/v1";
 
   useEffect(() => {
     fetchAddresses();

@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 type Props = {}
 
 const ProductContent = ({fetchSubcategories ,countProduct} : any) => {
-    const API_BASE_URL = 'http://localhost:8000/api/v1';
+    const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
 const USER_ID = '615be6a6-3e3f-42bc-aef7-568c064f34ce';
 
 const [productsLoading, setProductsLoading] = useState(false);

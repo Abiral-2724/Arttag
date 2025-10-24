@@ -53,7 +53,7 @@ export default function DailyObjectsReplica() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const router = useRouter();
 
-  const API_BASE = "http://localhost:8000/api/v1";
+  const API_BASE = "https://ecommerce-v628.onrender.com/api/v1";
 
   useEffect(() => {
     if (!localStorage.getItem("arttagUserId") || !localStorage.getItem("arttagtoken")) {

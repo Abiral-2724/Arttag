@@ -13,7 +13,7 @@ import FooterPart from '@/components/FooterPart';
 
 const SubcategoryProductsPage = () => {
   const router = useRouter();
-  const API_BASE_URL = 'http://localhost:8000/api/v1';
+  const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
   const {subcategoryId, categoryId, categoryName } = useParams();
 //   const subcategoryId= "f3c079fc-1321-461b-bf04-a747c8497745";
   const [userId, setUserId] = useState("");

@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import axios from 'axios';
 import AddressForm from './AddressForm';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
 
 export default function AddressSection({ addresses, userId, onUpdate, showAlert } : any) {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
