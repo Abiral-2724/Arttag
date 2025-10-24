@@ -434,7 +434,7 @@ const CategoryManagement = () => {
                                         {sub.imageUrl ? (
                                           <img
                                             src={sub.imageUrl}
-                                            alt={sub.name || ""} 
+                                            alt=""
                                             className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover shadow-md flex-shrink-0"
                                           />
                                         ) : (
@@ -539,7 +539,7 @@ const CategoryManagement = () => {
                                                 {sub.imageUrl ? (
                                                   <img
                                                     src={sub.imageUrl}
-                                                    alt={sub.name || ""}
+                                                    alt=""
                                                     className="w-16 h-16 rounded-lg object-cover shadow-md"
                                                   />
                                                 ) : (
