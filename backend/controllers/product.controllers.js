@@ -542,7 +542,7 @@ export const getProductBySpecificType = async (req, res) => {
       }
   
       // 2️⃣ Fetch all distinct 'type' values from products belonging to this subcategory
-      const products = await prisma.product.findMany({
+      const products = await client.product.findMany({
         where: { categoryId: subcategoryId },
         distinct: ["type"], // ensures unique types
         select: {
