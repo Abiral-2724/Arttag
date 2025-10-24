@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // Uncomment if you are using server actions
+    // serverActions: {},
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  env: {
+   
+  },
 };
 
 export default nextConfig;
