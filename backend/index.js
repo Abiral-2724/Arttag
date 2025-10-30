@@ -8,6 +8,8 @@ import productRoute from './routes/product.routes.js'
 import wishListRoute from './routes/wishlist.routes.js'
 import cartRoute from './routes/cart.routes.js'
 import orderRoute from './routes/order.routes.js'
+import coupenRoute from './routes/coupen.routes.js'
+
 const app = express() ; 
 
 dotenv.config({}) ; 
@@ -19,7 +21,7 @@ app.use(express.json()) ;
 app.use(express.urlencoded({extended : true})) ; 
 
 const corsOptions = {
-    origin: 'https://ecommerce-two-teal-40.vercel.app',
+    origin: 'http://localhost:3000',
     credentials: true, 
 };
 
@@ -37,6 +39,9 @@ app.use('/api/v1/wishlist' ,wishListRoute) ;
 app.use('/api/v1/cart' ,cartRoute)
 
 app.use('/api/v1/order' ,orderRoute);
+
+app.use('/api/v1/coupen' ,coupenRoute);
+
 
 app.listen(PORT ,() => {
     console.log(`Server running at ${PORT}`) ; 

@@ -6,8 +6,9 @@ import dotenv from 'dotenv'
 
 
 dotenv.config({});
-// const client = new PrismaClient() ;
 // import { PrismaClient } from '@prisma/client';
+// const client = new PrismaClient() ;
+
 
 export const addProduct = async (req, res) => {
     try {

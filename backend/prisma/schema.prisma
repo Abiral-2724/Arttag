@@ -204,3 +204,15 @@ model CartItems {
   owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
+
+
+model CouponsCode {
+  id             String    @id @default(uuid())
+  code           String   @unique
+  discountPercentage  Int
+  minOrderAmount Int
+  validFrom      DateTime?
+  validUntil     DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+}
