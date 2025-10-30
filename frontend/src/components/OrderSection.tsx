@@ -8,13 +8,7 @@ import OrderDetailsDialog from './OrderDetailsDialog';
 
 const ORDER_STATUS_TABS = [
   { id: 'ALL', label: 'All Orders' },
-  { id: 'PENDING', label: 'Pending' },
-  { id: 'CONFIRMED', label: 'Confirmed' },
-  { id: 'PROCESSING', label: 'Processing' },
-  { id: 'SHIPPED', label: 'Shipped' },
   { id: 'DELIVERED', label: 'Delivered' },
-  { id: 'CANCELLED', label: 'Cancelled' },
-  { id: 'RETURNED', label: 'Returned' }
 ];
 
 const getOrderStatusColor = (status : any) => {

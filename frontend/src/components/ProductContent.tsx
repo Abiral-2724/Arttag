@@ -17,14 +17,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 type Props = {}
 
 const ProductContent = ({fetchSubcategories ,countProduct} : any) => {
-    const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
+    const API_BASE_URL =  process.env.NEXT_PUBLIC_API_BASE_URL ;
+   
 const USER_ID = '615be6a6-3e3f-42bc-aef7-568c064f34ce';
 
 const [productsLoading, setProductsLoading] = useState(false);
 const [showAddProductDialog, setShowAddProductDialog] = useState(false);
 const [error, setError] = useState('');
 
-const [productForm, setProductForm] = useState({
+const [productForm, setProductForm] : any = useState({
     name: '',
     description: '',
     shortDescription: '',
@@ -141,13 +142,13 @@ const [productForm, setProductForm] = useState({
         formData.append('modelImageDescriptions', JSON.stringify(productForm.modelImageDescriptions));
       }
       
-      const colorsData = productForm.colors.map(color => ({
+      const colorsData = productForm.colors.map((color:any) => ({
         name: color.name ,
         hex: color.hex
       }));
       formData.append('colors', JSON.stringify(colorsData));
       
-      productForm.colors.forEach((color) => {
+      productForm.colors.forEach((color : any) => {
         if (color.images && color.images.length > 0) {
           color.images.forEach(img => {
             formData.append(`color_${color.name}_image`, img);
@@ -570,7 +571,7 @@ const [productForm, setProductForm] = useState({
                             id="primaryImage1"
                             type="file"
                             accept="image/*"
-                            onChange={(e) => setProductForm({ ...productForm, primaryImage1: e.target.files[0] })}
+                            onChange={(e : any) => setProductForm({ ...productForm, primaryImage1: e.target.files[0] })}
                             className="mt-1"
                           />
                         </div>
@@ -580,7 +581,7 @@ const [productForm, setProductForm] = useState({
                             id="primaryImage2"
                             type="file"
                             accept="image/*"
-                            onChange={(e) => setProductForm({ ...productForm, primaryImage2: e.target.files[0] })}
+                            onChange={(e : any) => setProductForm({ ...productForm, primaryImage2: e.target.files[0] })}
                             className="mt-1"
                           />
                         </div>
@@ -594,7 +595,7 @@ const [productForm, setProductForm] = useState({
                         type="file"
                         accept="image/*"
                         multiple
-                        onChange={(e) => {
+                        onChange={(e : any) => {
                           const files = Array.from(e.target.files);
                           setProductForm({ 
                             ...productForm, 
@@ -636,7 +637,7 @@ const [productForm, setProductForm] = useState({
                           Add Color
                         </Button>
                       </div>
-                      {productForm.colors.map((color, idx) => (
+                      {productForm.colors.map((color : any, idx : any)  => (
                         <div key={idx} className="p-4 border rounded-lg space-y-3 bg-slate-50">
                           <div className="flex items-center gap-2 justify-between">
                             <span className="font-medium text-sm">Color {idx + 1}</span>
@@ -691,7 +692,7 @@ const [productForm, setProductForm] = useState({
                               type="file"
                               multiple
                               accept="image/*"
-                              onChange={(e) => {
+                              onChange={(e : any) => {
                                 const files = Array.from(e.target.files).slice(0, 5);
                                 const newColors = [...productForm.colors];
                                 newColors[idx].images = files;
@@ -750,7 +751,7 @@ const [productForm, setProductForm] = useState({
                         </tr>
                       </thead>
                       <tbody>
-                        {products.map((product) => (
+                        {products.map((product : any) => (
                           <tr key={product.id} className="border-b hover:bg-slate-50 transition-colors">
                             <td className="p-3">
                               <div className="flex items-center gap-3">

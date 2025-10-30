@@ -20,17 +20,17 @@ import Link from 'next/link';
 
 
 const ShoppingCart = () => {
-  const [cartData, setCartData] = useState(null);
+  const [cartData, setCartData] : any = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCoupons, setShowCoupons] = useState(false);
   const [showGiftCard, setShowGiftCard] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedProduct, setSelectedProduct] : any = useState(null);
   const [processingItems, setProcessingItems] = useState({});
   
   const { userId } = useParams();
  
-  const API_BASE = "https://ecommerce-v628.onrender.com/api/v1/cart";
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     fetchCartData();
@@ -39,7 +39,7 @@ const ShoppingCart = () => {
   const fetchCartData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE}/${userId}/get/all/user/cart/product`);
+      const response = await axios.get(`${API_BASE}/cart/${userId}/get/all/user/cart/product`);
       
       if (response.data.success) {
         setCartData(response.data);
@@ -62,7 +62,7 @@ const ShoppingCart = () => {
     
     try {
       setProcessingItems(prev => ({ ...prev, [selectedProduct.productId]: true }));
-      const response = await axios.delete(`${API_BASE}/delete/product/user/cart`, {
+      const response = await axios.delete(`${API_BASE}/cart/delete/product/user/cart`, {
         data: { 
           userId, 
           productId: selectedProduct.productId 
@@ -71,7 +71,7 @@ const ShoppingCart = () => {
       
       if (response.data.success) {
         // Optimistic update
-        setCartData(prev => {
+        setCartData((prev : any) => {
           const newCart = prev.cart.filter(item => item.productId !== selectedProduct.productId);
           const itemToRemove = prev.cart.find(item => item.productId === selectedProduct.productId);
           const itemTotal = itemToRemove.quantity * itemToRemove.product.originalPrice;
@@ -107,14 +107,14 @@ const ShoppingCart = () => {
     
     try {
       setProcessingItems(prev => ({ ...prev, [selectedProduct.productId]: true }));
-      const response = await axios.patch(`${API_BASE}/move/product/cart/to/wishlist`, {
+      const response = await axios.patch(`${API_BASE}/cart/move/product/cart/to/wishlist`, {
         userId,
         productId: selectedProduct.productId
       });
       
       if (response.data.success) {
         // Optimistic update
-        setCartData(prev => {
+        setCartData((prev : any) => {
           const newCart = prev.cart.filter(item => item.productId !== selectedProduct.productId);
           const itemToRemove = prev.cart.find(item => item.productId === selectedProduct.productId);
           const itemTotal = itemToRemove.quantity * itemToRemove.product.originalPrice;
@@ -151,7 +151,7 @@ const ShoppingCart = () => {
       setProcessingItems(prev => ({ ...prev, [productId]: true }));
       
       // Optimistic update
-      setCartData(prev => {
+      setCartData((prev : any) => {
         const newCart = prev.cart.map(item => {
           if (item.productId === productId) {
             return { ...item, quantity: item.quantity + 1 };
@@ -174,7 +174,7 @@ const ShoppingCart = () => {
         };
       });
       
-      const response = await axios.patch(`${API_BASE}/update/product/count`, {
+      const response = await axios.patch(`${API_BASE}/cart/update/product/count`, {
         userId,
         productId,
         productCount: currentQuantity
@@ -203,7 +203,7 @@ const ShoppingCart = () => {
       setProcessingItems(prev => ({ ...prev, [productId]: true }));
       
       // Optimistic update
-      setCartData(prev => {
+      setCartData((prev : any)=> {
         const newCart = prev.cart.map(item => {
           if (item.productId === productId) {
             return { ...item, quantity: item.quantity - 1 };
@@ -226,7 +226,7 @@ const ShoppingCart = () => {
         };
       });
       
-      const response = await axios.patch(`${API_BASE}/decrease/product/count`, {
+      const response = await axios.patch(`${API_BASE}/cart/decrease/product/count`, {
         userId,
         productId,
         productCount: currentQuantity

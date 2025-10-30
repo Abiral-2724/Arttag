@@ -61,7 +61,7 @@ const CategoryManagement = () => {
   
   const [subcategoryDialogOpen, setSubcategoryDialogOpen] = useState(false);
   const [subcategoryName, setSubcategoryName] = useState('');
-  const [subcategoryImage, setSubcategoryImage] = useState(null);
+  const [subcategoryImage, setSubcategoryImage] : any = useState(null);
   const [selectedParentId, setSelectedParentId] = useState('');
   const [subcategoryLoading, setSubcategoryLoading] = useState(false);
   
@@ -70,7 +70,7 @@ const CategoryManagement = () => {
   const [loadingSubcategories, setLoadingSubcategories] = useState({});
   const [isChecking, setIsChecking] = useState(true);
  
-  const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const router = useRouter();
   
   useEffect(() => {
@@ -110,11 +110,11 @@ const CategoryManagement = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`${API_BASE_URL}/category/${userId}/get/all/category`);
+      const response = await axios.get(`${API_BASE_URL}/category/get/all/category`);
       if (response.data.success) {
         setCategories(response.data.category);
       }
-    } catch (err) {
+    } catch (err : any) {
       setError(err.response?.data?.message || 'Failed to fetch categories');
     } finally {
       setLoading(false);
@@ -138,7 +138,7 @@ const CategoryManagement = () => {
           [categoryId]: sortedSubcategories
         }));
       }
-    } catch (err) {
+    } catch (err : any) {
       if (err.response?.status === 404 || err.response?.data?.message?.includes('No subcategory')) {
         setSubcategoriesData(prev => ({
           ...prev,
@@ -173,7 +173,7 @@ const CategoryManagement = () => {
         fetchCategories();
         setTimeout(() => setSuccess(''), 3000);
       }
-    } catch (err) {
+    } catch (err : any) {
       setError(err.response?.data?.message || 'Failed to create category');
     } finally {
       setCategoryLoading(false);
@@ -221,7 +221,7 @@ const CategoryManagement = () => {
         fetchCategories();
         setTimeout(() => setSuccess(''), 3000);
       }
-    } catch (err) {
+    } catch (err : any) {
       setError(err.response?.data?.message || 'Failed to create subcategory');
     } finally {
       setSubcategoryLoading(false);
@@ -380,7 +380,7 @@ const CategoryManagement = () => {
                     <>
                       {/* Mobile View */}
                       <div className="block lg:hidden">
-                        {categories.map((category) => (
+                        {categories.map((category : any) => (
                           <div key={category.id} className="border-b last:border-b-0">
                             <div 
                               className="p-4 hover:bg-blue-50 cursor-pointer transition-colors"
@@ -478,7 +478,7 @@ const CategoryManagement = () => {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {categories.map((category) => (
+                            {categories.map((category : any) => (
                               <React.Fragment key={category.id}>
                                 <TableRow 
                                   className="hover:bg-blue-50 cursor-pointer transition-colors"
@@ -605,7 +605,7 @@ const CategoryManagement = () => {
                         id="subcategoryImage"
                         type="file"
                         accept="image/*"
-                        onChange={(e) => setSubcategoryImage(e.target.files[0])}
+                        onChange={(e:any) => setSubcategoryImage(e.target.files[0])}
                         className="h-10 sm:h-11 cursor-pointer text-sm"
                       />
                       {subcategoryImage && (

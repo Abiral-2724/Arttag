@@ -15,13 +15,13 @@ import FooterPart from '@/components/FooterPart';
 export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardData, setDashboardData] : any = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] : any = useState(null);
 
   const [isChecking, setIsChecking] = useState(true);
-
-  const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
+  process.env.NEXT_PUBLIC_API_BASE_URL
+  const API_BASE_URL =  process.env.NEXT_PUBLIC_API_BASE_URL ;
   const { userId } = useParams();
  
 const router = useRouter() ; 
@@ -77,7 +77,7 @@ const handleviewOrder = () => {
       setLoading(true);
       setError(null);
       // Replace with your actual API endpoint
-      const response = await fetch('https://ecommerce-v628.onrender.com/api/v1/product/all/website/details');
+      const response = await fetch(`${API_BASE_URL}/product/all/website/details`);
       const data = await response.json();
       
       if (data.success) {
@@ -85,7 +85,7 @@ const handleviewOrder = () => {
       } else {
         setError(data.message || 'Failed to fetch dashboard data');
       }
-    } catch (err) {
+    } catch (err : any) {
       setError(err.message || 'Failed to fetch dashboard data');
       console.error('Error fetching dashboard data:', err);
     } finally {

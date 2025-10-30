@@ -22,16 +22,16 @@ import FooterPart from '@/components/FooterPart';
 
 export default function ProductAdminPortal() {
     const router = useRouter() ; 
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] : any = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [viewProduct, setViewProduct] = useState(null);
+  const [viewProduct, setViewProduct] : any = useState(null);
   const [isChecking, setIsChecking] = useState(true);
 
-  const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
+  const API_BASE_URL =  process.env.NEXT_PUBLIC_API_BASE_URL;
   const { userId } = useParams();
  
 
@@ -95,10 +95,10 @@ export default function ProductAdminPortal() {
   });
 
   const [colors, setColors] = useState([{ name: '', hex: '#000000', images: [] }]);
-  const [modelImages, setModelImages] = useState([]);
-  const [modelImageDescriptions, setModelImageDescriptions] = useState([]);
-  const [primaryImage1, setPrimaryImage1] = useState(null);
-  const [primaryImage2, setPrimaryImage2] = useState(null);
+  const [modelImages, setModelImages] : any = useState([]);
+  const [modelImageDescriptions, setModelImageDescriptions] : any = useState([]);
+  const [primaryImage1, setPrimaryImage1] : any = useState(null);
+  const [primaryImage2, setPrimaryImage2] : any = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -121,7 +121,7 @@ export default function ProductAdminPortal() {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/category/${userId}/get/all/category`);
+      const response = await axios.get(`${API_BASE_URL}/category/get/all/category`);
       if (response.data.success) {
         setCategories(response.data.category);
       }
@@ -171,7 +171,7 @@ export default function ProductAdminPortal() {
   };
 
   const handleColorImageUpload = (index, files) => {
-    const newColors = [...colors];
+    const newColors : any = [...colors];
     newColors[index].images = [...newColors[index].images, ...Array.from(files)];
     setColors(newColors);
   };
@@ -194,7 +194,7 @@ export default function ProductAdminPortal() {
   };
 
   const updateModelImageDescription = (index, description) => {
-    const newDescriptions = [...modelImageDescriptions];
+    const newDescriptions : any = [...modelImageDescriptions];
     newDescriptions[index] = description;
     setModelImageDescriptions(newDescriptions);
   };
@@ -257,7 +257,7 @@ export default function ProductAdminPortal() {
         setIsAddDialogOpen(false);
         fetchProducts();
       }
-    } catch (error) {
+    } catch (error : any) {
       showAlert(error.response?.data?.message || 'Failed to add product', 'error');
     } finally {
       setLoading(false);
@@ -277,7 +277,7 @@ export default function ProductAdminPortal() {
         showAlert('Product deleted successfully!', 'success');
         fetchProducts();
       }
-    } catch (error) {
+    } catch (error : any) {
       showAlert(error.response?.data?.message || 'Failed to delete product', 'error');
     } finally {
       setLoading(false);
@@ -402,7 +402,7 @@ export default function ProductAdminPortal() {
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent className='bg-white'>
-                      {categories.map(cat => (
+                      {categories.map((cat : any) => (
                         <SelectItem key={cat.id} value={cat.id} className="text-sm">{cat.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -507,13 +507,13 @@ subcategories?.map((sub : any) => (
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label className="text-sm">Primary Image 1</Label>
-                  <Input type="file" accept="image/*" onChange={(e) => setPrimaryImage1(e.target.files[0])} className="text-sm" />
+                  <Input type="file" accept="image/*" onChange={(e : any) => setPrimaryImage1(e.target.files[0])} className="text-sm" />
                   {primaryImage1 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage1.name}</p>}
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm">Primary Image 2</Label>
-                  <Input type="file" accept="image/*" onChange={(e) => setPrimaryImage2(e.target.files[0])} className="text-sm" />
+                  <Input type="file" accept="image/*" onChange={(e : any) => setPrimaryImage2(e.target.files[0])} className="text-sm" />
                   {primaryImage2 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage2.name}</p>}
                 </div>
 
@@ -522,7 +522,7 @@ subcategories?.map((sub : any) => (
                   <Input type="file" accept="image/*" multiple onChange={(e) => handleModelImageUpload(e.target.files)} className="text-sm" />
                   {modelImages.length > 0 && (
                     <div className="space-y-2 mt-2">
-                      {modelImages.map((img, idx) => (
+                      {modelImages.map((img : any, idx : any) => (
                         <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-gray-100 rounded">
                           <span className="text-xs sm:text-sm flex-1 break-all">{img.name}</span>
                           <Input
@@ -597,7 +597,7 @@ subcategories?.map((sub : any) => (
                       />
                       {color.images.length > 0 && (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                          {color.images.map((img, imgIdx) => (
+                          {color.images.map((img : any, imgIdx) => (
                             <div key={imgIdx} className="relative p-2 bg-gray-100 rounded text-xs sm:text-sm">
                               <span className="truncate block">{img.name}</span>
                               <Button

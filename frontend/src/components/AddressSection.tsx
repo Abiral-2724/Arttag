@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import axios from 'axios';
 import AddressForm from './AddressForm';
 
-const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
+const API_BASE_URL =  process.env.NEXT_PUBLIC_API_BASE_URL ;
 
 export default function AddressSection({ addresses, userId, onUpdate, showAlert } : any) {
   const [isAddingAddress, setIsAddingAddress] = useState(false);
@@ -89,7 +89,7 @@ export default function AddressSection({ addresses, userId, onUpdate, showAlert 
             {addresses.map((addr : any) => (
               <Card key={addr.id} className="border border-gray-200 hover:border-gray-300 transition-all">
                 <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-3">
+                  <div className="flex justify-between items-start mb-1">
                     <h3 className="font-semibold text-gray-900">{addr.fullname}</h3>
                     <div className="flex gap-2">
                       <Button 
@@ -114,9 +114,6 @@ export default function AddressSection({ addresses, userId, onUpdate, showAlert 
                     <p>{addr.streetAddress}, {addr.locality}</p>
                     <p>{addr.city}, {addr.state} - {addr.pincode}</p>
                     <p>{addr.country}</p>
-                    <Separator className="my-2" />
-                    <p><span className="font-medium text-gray-700">Mobile:</span> {addr.mobile}</p>
-                    <p><span className="font-medium text-gray-700">Email:</span> {addr.email}</p>
                   </div>
                 </CardContent>
               </Card>

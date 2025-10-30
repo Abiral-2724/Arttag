@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const initialFormState = {
   fullname: '', 

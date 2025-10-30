@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   });
 
   const { userId } = useParams();
-  const API_BASE_URL = "https://ecommerce-v628.onrender.com/api/v1";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ;
 
   useEffect(() => {
     fetchAddresses();
@@ -196,7 +196,7 @@ export default function CheckoutPage() {
   };
 
   const getSelectedAddressDetails = () => {
-    return addresses.find(addr => addr.id === selectedAddress);
+    return addresses.find((addr : any) => addr.id === selectedAddress);
   };
 
   const grandTotal = orderSummary.totalamount + orderSummary.shippingCharge;
@@ -273,7 +273,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <RadioGroup value={selectedAddress} onValueChange={setSelectedAddress} className="space-y-3">
-                      {addresses.map((address) => (
+                      {addresses.map((address : any) => (
                         <div 
                           key={address.id} 
                           className={`relative flex items-start space-x-4 p-5 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-md ${

@@ -25,8 +25,8 @@ const OrderManagement = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [isChecking, setIsChecking] = useState(true);
  
-  // Replace with your actual API base URL and user ID
-  const API_BASE_URL = 'https://ecommerce-v628.onrender.com/api/v1';
+  
+  const API_BASE_URL =  process.env.NEXT_PUBLIC_API_BASE_URL;
   
 
 
@@ -359,10 +359,14 @@ const OrderManagement = () => {
             <Spinner className='text-blue-700 text-5xl'></Spinner>
             <p className="text-gray-600 text-sm text-center">Verifying request</p>
           </div> ) : (
-             <div className="flex flex-col items-center justify-center gap-2 min-h-screen bg-gray-50 px-4">
+            <div>
+              <Navbar></Navbar>
+              <div className="flex flex-col items-center justify-center gap-2 min-h-screen bg-gray-50 px-4">
             <Spinner className='text-blue-700 text-5xl'></Spinner>
              <p className="text-gray-600 text-sm text-center">Loading orders...</p>
            </div>
+            </div>
+            
           )
         }
         </div>

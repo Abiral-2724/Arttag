@@ -19,27 +19,27 @@ import { Spinner } from "@/components/ui/spinner";
 
 const AllCategoriesPage = () => {
   const router = useRouter();
-  const API_BASE_URL = "https://ecommerce-v628.onrender.com/api/v1";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] : any = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userId, setUserId] = useState("");
+  const [error, setError] : any = useState(null);
+  // const [userId, setUserId] = useState("");
+
+  // useEffect(() => {
+  //   const storedUserId = localStorage.getItem("arttagUserId");
+  //   if (storedUserId) {
+  //     setUserId(storedUserId);
+  //   } else {
+  //     router.push("/login");
+  //   }
+  // }, [router]);
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("arttagUserId");
-    if (storedUserId) {
-      setUserId(storedUserId);
-    } else {
-      router.push("/login");
-    }
-  }, [router]);
-
-  useEffect(() => {
-    if (userId) {
+    
       fetchCategories();
-    }
-  }, [userId]);
+    
+  }, []);
 
   const fetchCategories = async () => {
     try {
@@ -47,7 +47,7 @@ const AllCategoriesPage = () => {
       setError(null);
 
       const response = await fetch(
-        `${API_BASE_URL}/category/${userId}/get/all/category`
+        `${API_BASE_URL}/category/get/all/category`
       );
       const data = await response.json();
 

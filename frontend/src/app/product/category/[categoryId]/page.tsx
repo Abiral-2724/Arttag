@@ -12,7 +12,7 @@ const CategoryPage = () => {
   const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState("");
-  const [error, setError] = useState(null);
+  const [error, setError] : any = useState(null);
   const router = useRouter();
 
   const handleclicksubcategory = (subcategoryId : string) =>{
@@ -26,7 +26,7 @@ const CategoryPage = () => {
         setError(null);
         
         const response = await axios.get(
-          `https://ecommerce-v628.onrender.com/api/v1/category/get/${categoryId}/all/subcategory`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/category/get/${categoryId}/all/subcategory`
         );
     setCategoryName(response.data.parentCategory.name)
         if (response.data.success) {
@@ -98,7 +98,7 @@ const CategoryPage = () => {
     {/* Subcategories Grid */}
     <div className="max-w-[900px] mx-auto px-6 py-16">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-10 gap-y-14">
-        {subcategories.map((subcategory) => (
+        {subcategories.map((subcategory : any) => (
             <button 
             key={subcategory.id}
             onClick={() => handleclicksubcategory(subcategory.id)}
@@ -113,7 +113,7 @@ const CategoryPage = () => {
                 src={subcategory.imageUrl}
                 alt={subcategory.name}
                 className="w-3/4 h-3/4 object-contain transition-transform duration-300 group-hover:scale-110"
-                onError={(e) => {
+                onError={(e : any) => {
                   e.target.src =
                     'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&q=80';
                 }}

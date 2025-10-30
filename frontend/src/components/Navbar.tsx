@@ -8,75 +8,77 @@ import axios from 'axios';
 import { Button } from './ui/button';
 
 type Props = {
-  userId: string;
+  userId?: string;
   cartCount?: number;
 }
 
 const navItems = [
-    {
-      name: 'TECH ACCESSORIES',
-      items: ['Stands', 'Phone Cases'],
-      id : "cfd5c887-cfc6-4224-9da6-bb8fc85096a1"
-    },
-    {
-      name: 'BAGS & WALLETS',
-      items: ['Backpacks', 'Laptop Bags', 'Wallets', 'Card Holders', 'Travel Bags'],
-      id : "e60bc235-8d04-4c31-b229-ba3a71f25fb0"
-    },
-    {
-      name: 'WORK ESSENTIALS',
-      items: ['Notebooks', 'Organizers', 'Desk Accessories', 'Planners', 'Pens & Pencils'] ,
-      id : "8c9213f1-2ce7-4066-80f1-3dad45afab17"
-    },
-    {
-      name: 'SHOP BY APPLE',
-      items: ['iPhone Cases', 'iPad Accessories', 'MacBook Sleeves', 'AirPods Cases', 'Apple Watch Bands'],
-      id : "6578853f-a315-4c27-acd2-d1ca33f55135"
-    },
-    {
-      name: 'All CATEGORY',
-      items: []
-    }
-  ];
-  const API_BASE_URL = "https://ecommerce-v628.onrender.com/api/v1" ;
+  {
+    name: 'Tech Essentials',
+    items: ['Hard Drives', '4-in-1 Cable', 'Wireless Chargers', 'Essential Connectors' ,'Keyboard & Mouse'],
+    id : "cfd5c887-cfc6-4224-9da6-bb8fc85096a1"
+  },
+  {
+    name: 'Travel Essentials',
+    items: ['Backpacks', 'Pouches', 'Travel Organizers', 'Table Organizers'],
+    id : "e60bc235-8d04-4c31-b229-ba3a71f25fb0"
+  },
+  {
+    name: 'Lifestyle Accessories',
+    items: ['Keychains', 'Wallets', 'Female Handbags', 'Water Bottles', 'Stationery'] ,
+    id : "8c9213f1-2ce7-4066-80f1-3dad45afab17"
+  },
+  {
+    name: 'Creative Add-Ons',
+    items: ['Skins', 'Stickers', 'Limited Edition Art Prints'],
+    id : "6578853f-a315-4c27-acd2-d1ca33f55135"
+  },
+  {
+    name: 'All CATEGORY',
+    items: []
+  }
+];
+  const API_BASE_URL =  process.env.NEXT_PUBLIC_API_BASE_URL ;
 
 const Navbar = ({page} : any) => {
     const router = useRouter();
-    const [userId, setUserId] = useState("");
+    const [userId, setUserId] = useState<string | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isAdmin ,setIsAdmin] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [expandedCategory, setExpandedCategory] = useState<number | null>(null);
-
-    useEffect(() => {
-        if (!localStorage.getItem("arttagUserId") || !localStorage.getItem("arttagtoken")) {
-          router.push('/login');
-          return;
-        }
-        
-        const id = localStorage.getItem("arttagUserId");
-        if (id) {
-          setUserId(id);
-        }
-
-        const checkadmin = async () => {
-            const response = await axios.get(`${API_BASE_URL}/user/${id}/get/profile`);
-
-            if (response.data.user.role === "ADMIN") {
-              setIsAdmin(true)
-            }
-        }
-        checkadmin() ;
-       
-      }, []);
-    
-  
     const [cartCount, setCartCount] = useState(0);
 
+    useEffect(() => {
+        const token = localStorage.getItem("arttagtoken");
+        const id = localStorage.getItem("arttagUserId");
+        
+        // Check if user is authenticated
+        if (token && id) {
+          setUserId(id);
+          setIsAuthenticated(true);
+          checkAdmin(id);
+          fetchCartCount(id);
+        } else {
+          setUserId(null);
+          setIsAuthenticated(false);
+        }
+      }, []);
     
+    const checkAdmin = async (id: string) => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/user/${id}/get/profile`);
+        if (response.data.user.role === "ADMIN") {
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+      }
+    };
 
     const fetchCartCount = async (id: string) => {
         try {
-          const response = await axios.get(`${API_BASE_URL}/cart/${userId}/get/product/total/count`);
+          const response = await axios.get(`${API_BASE_URL}/cart/${id}/get/product/total/count`);
           if (response.data.success) {
             setCartCount(response.data.totalCount);
           }
@@ -84,16 +86,32 @@ const Navbar = ({page} : any) => {
           console.error('Error fetching cart count:', error);
         }
       };
-    
-      useEffect(() => {
-        if (userId) {
-          fetchCartCount(userId);
-        }
-      }, [userId]);
 
-      const handleadminpage = () => {
-        router.push(`/${userId}/admin`)
-      }
+      const handleAdminPage = () => {
+        if (userId) {
+          router.push(`/${userId}/admin`);
+        }
+      };
+
+      const handleLoginClick = () => {
+        router.push('/login');
+      };
+
+      const handleCartClick = () => {
+        if (userId) {
+          router.push(`/${userId}/cart`);
+        } else {
+          router.push('/login');
+        }
+      };
+
+      const handleProfileClick = () => {
+        if (userId) {
+          router.push(`/${userId}/profile`);
+        } else {
+          router.push('/login');
+        }
+      };
 
       const toggleCategory = (idx: number) => {
         setExpandedCategory(expandedCategory === idx ? null : idx);
@@ -105,11 +123,36 @@ const Navbar = ({page} : any) => {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
+            <Link href={'/'}>
             <div className="flex items-center gap-2">
-            <div className="text-2xl sm:text-3xl font-black tracking-tighter">
-                <span className="text-black">ARTTAG</span>
-              </div>
-            </div>
+  <div className="w-auto h-10">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 270 54"
+      className="h-full w-auto"
+    >
+      <defs>
+        <style>
+          {`
+          .st0 {
+            font-family: MuktaMahee-Regular, 'Mukta Mahee';
+            font-size: 49.69px;
+          }
+          `}
+        </style>
+      </defs>
+      <g>
+        <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
+        <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
+        <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
+      </g>
+      <text className="st0" transform="translate(84.95 40.38)">
+        <tspan x="0" y="0">Arttag</tspan>
+      </text>
+    </svg>
+  </div>
+</div>
+            </Link>
 
             {/* Desktop Navigation */}
             {
@@ -127,7 +170,7 @@ const Navbar = ({page} : any) => {
                         <DropdownMenuContent 
                           className="w-60 mt-3 bg-white border-0 shadow-2xl rounded-xl p-3 animate-in fade-in-0 slide-in-from-top-2 duration-200"
                           onMouseLeave={(e) => {
-                            const trigger = e.currentTarget.previousElementSibling;
+                            const trigger : any = e.currentTarget.previousElementSibling;
                             if (trigger) trigger.click();
                           }}
                         >
@@ -174,64 +217,71 @@ const Navbar = ({page} : any) => {
                   </nav>
                 )
             }
-          
 
             {/* Desktop Icons */}
             <div className="hidden md:flex items-center gap-4 lg:gap-7">
-                {
-                    page !== "cart" && (
-                        <Link href={`/${userId}/cart`}>
-                        <button className="relative" >
-                            <ShoppingCart className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-black stroke-[1.5]" />
-                            {cartCount > 0 && (
-                              <span className="absolute -top-2 -right-2 bg-teal-500 text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold">
-                                {cartCount}
-                              </span>
-                            )}
-                          </button>
-                        </Link>
-                    )
-                }
-           
-             
-              <Link href={`/${userId}/profile`}>
-              <button>
-                <User className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-black stroke-[1.5]" />
-              </button>
-              </Link>
-             
-            {
-                page !== "cart" && (
-                    <button>
-                <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-black stroke-[1.5]" />
-              </button>
-                )
-            }
+                {isAuthenticated ? (
+                  <>
+                    {page !== "cart" && (
+                      <button className="relative" onClick={handleCartClick}>
+                        <ShoppingCart className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-black stroke-[1.5]" />
+                        {cartCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-teal-500 text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold">
+                            {cartCount}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                    
+                    <button onClick={handleProfileClick}>
+                      <User className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-black stroke-[1.5]" />
+                    </button>
+                    
+                    {page !== "cart" && (
+                      <button>
+                        <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-black stroke-[1.5]" />
+                      </button>
+                    )}
 
-           <div>
-            {
-                isAdmin ? (<>
-                            <Button variant="outline" onClick={handleadminpage} className='bg-blue-600 text-white text-xs lg:text-sm px-3 lg:px-4'>Admin</Button>
-                </>) : (<>
-                </>)
-            }
-           </div>
-              
+                    {isAdmin && (
+                      <Button 
+                        variant="outline" 
+                        onClick={handleAdminPage} 
+                        className='bg-blue-600 text-white text-xs lg:text-sm px-3 lg:px-4'
+                      >
+                        Admin
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {page !== "cart" && (
+                      <button>
+                        <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-black stroke-[1.5]" />
+                      </button>
+                    )}
+                    
+                    <Button 
+                      onClick={handleLoginClick}
+                      className='bg-blue-700 text-white font-light text-sm px-3 lg:px-5 py-2'
+                    >
+                      Login
+                    </Button>
+                  </>
+                )}
             </div>
 
             {/* Mobile Icons & Menu Button */}
             <div className="flex md:hidden items-center gap-4">
-              {page !== "cart" && (
-                <Link href={`/${userId}/cart`}>
-                  <button className="relative">
-                    <ShoppingCart className="w-5 h-5 text-black stroke-[1.5]" />
-                    {cartCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-teal-500 text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold">
-                        {cartCount}
-                      </span>
-                    )}
-                  </button>
-                </Link>
+              {isAuthenticated && page !== "cart" && (
+                <button className="relative" onClick={handleCartClick}>
+                  <ShoppingCart className="w-5 h-5 text-black stroke-[1.5]" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-teal-500 text-white text-[10px] rounded-full w-[18px] h-[18px] flex items-center justify-center font-bold">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
               )}
               
               <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -283,31 +333,58 @@ const Navbar = ({page} : any) => {
 
               {/* Mobile User Actions */}
               <div className="pt-4 space-y-3 border-t border-gray-100">
-                <Link href={`/${userId}/profile`} onClick={() => setMobileMenuOpen(false)}>
-                  <button className="flex items-center gap-3 w-full py-3 text-sm font-medium text-black">
-                    <User className="w-5 h-5" />
-                    Profile
-                  </button>
-                </Link>
-                
-                {page !== "cart" && (
-                  <button className="flex items-center gap-3 w-full py-3 text-sm font-medium text-black">
-                    <Search className="w-5 h-5" />
-                    Search
-                  </button>
-                )}
+                {isAuthenticated ? (
+                  <>
+                    <button 
+                      onClick={() => {
+                        handleProfileClick();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 w-full py-3 text-sm font-medium text-black"
+                    >
+                      <User className="w-5 h-5" />
+                      Profile
+                    </button>
+                    
+                    {page !== "cart" && (
+                      <button className="flex items-center gap-3 w-full py-3 text-sm font-medium text-black">
+                        <Search className="w-5 h-5" />
+                        Search
+                      </button>
+                    )}
 
-                {isAdmin && (
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      handleadminpage();
-                      setMobileMenuOpen(false);
-                    }} 
-                    className='w-full bg-blue-600 text-white'
-                  >
-                    Admin Panel
-                  </Button>
+                    {isAdmin && (
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          handleAdminPage();
+                          setMobileMenuOpen(false);
+                        }} 
+                        className='w-full bg-blue-600 text-white'
+                      >
+                        Admin Panel
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {page !== "cart" && (
+                      <button className="flex items-center gap-3 w-full py-3 text-sm font-medium text-black">
+                        <Search className="w-5 h-5" />
+                        Search
+                      </button>
+                    )}
+                    
+                    <Button 
+                      onClick={() => {
+                        handleLoginClick();
+                        setMobileMenuOpen(false);
+                      }}
+                      className='w-full bg-blue-600 text-white py-3'
+                    >
+                      Login
+                    </Button>
+                  </>
                 )}
               </div>
             </div>

@@ -15,46 +15,42 @@ import Footer from '@/components/Footer';
 import { Spinner } from '@/components/ui/spinner';
 
 const ProductDetailPage = () => {
-  const [product, setProduct] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
+  const [product, setProduct] : any = useState(null);
+  const [selectedColor, setSelectedColor] : any = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [pincode, setPincode] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] : any = useState(null);
   const [isInCart, setIsInCart] = useState(false);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
   const [togglingWishlist, setTogglingWishlist] = useState(false);
   const [userId, setUserId] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const {productId} = useParams();
   const router = useRouter();
-  const API_BASE_URL = "https://ecommerce-v628.onrender.com/api/v1" ; 
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ; 
 
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagtoken") : null;
-    const storedUserId = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagUserId") : null;
+    const storedUserId : any = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagUserId") : null;
     
-    if (!storedUserId || !token) {
-      router.push('/login');
-      return;
-    }
-    
-    if (storedUserId) {
+    // Check if user is logged in
+    if (storedUserId && token) {
       setUserId(storedUserId);
+      setIsLoggedIn(true);
+    } else {
+      setIsLoggedIn(false);
     }
-  }, [router]);
-  
-  
-  useEffect(() => {
-    if (userId) {
-      fetchProductDetails();
-    }
-  }, [userId]);
+    
+    // Always fetch product details regardless of login status
+    fetchProductDetails(storedUserId);
+  }, []);
 
 
 
-  const fetchProductDetails = async () => {
+  const fetchProductDetails = async (currentUserId = null) => {
     try {
       setLoading(true);
       const response = await fetch(`${API_BASE_URL}/product/get/product/details/${productId}`);
@@ -63,20 +59,23 @@ const ProductDetailPage = () => {
       if (data.success) {
         setProduct(data.product);
         
-        // Check if product is in wishlist
-        if (data.product.wishlists && data.product.wishlists.length > 0) {
-          const inWishlist = data.product.wishlists.some(
-            wishlistItem => wishlistItem.userId === userId
-          );
-          setIsInWishlist(inWishlist);
-        }
-        
-        // Check if product is in cart
-        if (data.product.cart && data.product.cart.length > 0) {
-          const inCart = data.product.cart.some(
-            cartItem => cartItem.ownerId === userId
-          );
-          setIsInCart(inCart);
+        // Only check wishlist and cart status if user is logged in
+        if (currentUserId) {
+          // Check if product is in wishlist
+          if (data.product.wishlists && data.product.wishlists.length > 0) {
+            const inWishlist = data.product.wishlists.some(
+              wishlistItem => wishlistItem.userId === currentUserId
+            );
+            setIsInWishlist(inWishlist);
+          }
+          
+          // Check if product is in cart
+          if (data.product.cart && data.product.cart.length > 0) {
+            const inCart = data.product.cart.some(
+              cartItem => cartItem.ownerId === currentUserId
+            );
+            setIsInCart(inCart);
+          }
         }
         
         if (data.product.colors && data.product.colors.length > 0) {
@@ -95,7 +94,7 @@ const ProductDetailPage = () => {
   const getCurrentImages = () => {
     if (!selectedColor) return [];
     
-    const images = [];
+    const images : any = [];
     if (selectedColor.colorImage1) images.push(selectedColor.colorImage1);
     if (selectedColor.colorImage2) images.push(selectedColor.colorImage2);
     if (selectedColor.colorImage3) images.push(selectedColor.colorImage3);
@@ -121,6 +120,12 @@ const ProductDetailPage = () => {
   };
 
   const handleAddToCart = async () => {
+    // If user is not logged in, redirect to login
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+
     if (isInCart) {
       router.push(`/${userId}/cart`);
       return;
@@ -137,7 +142,7 @@ const ProductDetailPage = () => {
         setIsInCart(true);
         alert('Product added to cart successfully!');
       }
-    } catch (err) {
+    } catch (err : any) {
       if (err.response?.data?.message === 'Product already added to cart') {
         setIsInCart(true);
       }
@@ -148,6 +153,12 @@ const ProductDetailPage = () => {
   };
 
   const handleToggleWishlist = async () => {
+    // If user is not logged in, redirect to login
+    if (!isLoggedIn) {
+      router.push('/login');
+      return;
+    }
+
     try {
       setTogglingWishlist(true);
       
@@ -161,7 +172,6 @@ const ProductDetailPage = () => {
 
         if (response.data.success) {
           setIsInWishlist(false);
-        //   alert('Removed from wishlist');
         }
       } else {
         const response = await axios.post(`${API_BASE_URL}/wishlist/add/product/user/wishlist`, {
@@ -171,10 +181,9 @@ const ProductDetailPage = () => {
 
         if (response.data.success) {
           setIsInWishlist(true);
-        //   alert('Added to wishlist!');
         }
       }
-    } catch (err) {
+    } catch (err : any) {
       if (err.response?.data?.message === 'product already added to user wishlist') {
         setIsInWishlist(true);
       }
@@ -224,20 +233,22 @@ const ProductDetailPage = () => {
                 />
               )}
               
-              {/* Wishlist Heart Icon */}
-              <button
-                onClick={handleToggleWishlist}
-                disabled={togglingWishlist}
-                className={`absolute top-4 right-4 p-3 rounded-full shadow-lg transition-all ${
-                  togglingWishlist ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
-                } ${isInWishlist ? 'bg-red-500' : 'bg-white/90'}`}
-              >
-                <Heart
-                  className={`w-6 h-6 ${
-                    isInWishlist ? 'fill-white text-white' : 'text-gray-700'
-                  }`}
-                />
-              </button>
+              {/* Wishlist Heart Icon - Only show if logged in */}
+              {isLoggedIn && (
+                <button
+                  onClick={handleToggleWishlist}
+                  disabled={togglingWishlist}
+                  className={`absolute top-4 right-4 p-3 rounded-full shadow-lg transition-all ${
+                    togglingWishlist ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
+                  } ${isInWishlist ? 'bg-red-500' : 'bg-white/90'}`}
+                >
+                  <Heart
+                    className={`w-6 h-6 ${
+                      isInWishlist ? 'fill-white text-white' : 'text-gray-700'
+                    }`}
+                  />
+                </button>
+              )}
               
               {images.length > 1 && (
                 <>
@@ -313,15 +324,23 @@ const ProductDetailPage = () => {
             <button
               onClick={handleAddToCart}
               disabled={addingToCart}
-              className={`w-[76%] py-3 rounded-lg font-semibold text-lg transition-colors ${
+              className={`w-[76%] py-3 rounded-lg font-medium text-lg transition-colors ${
                 addingToCart
                   ? 'bg-gray-400 cursor-not-allowed'
+                  : !isLoggedIn
+                  ? 'bg-blue-700 hover:bg-blue-600'
                   : isInCart
                   ? 'bg-amber-800 hover:bg-amber-700'
                   : 'bg-blue-700 hover:bg-blue-600'
               } text-white`}
             >
-              {addingToCart ? 'ADDING...' : isInCart ? 'GO TO CART' : 'ADD TO CART'}
+              {addingToCart 
+                ? 'ADDING...' 
+                : !isLoggedIn 
+                ? 'LOGIN TO ADD TO CART' 
+                : isInCart 
+                ? 'GO TO CART' 
+                : 'ADD TO CART'}
             </button>
 
             {/* Features */}
