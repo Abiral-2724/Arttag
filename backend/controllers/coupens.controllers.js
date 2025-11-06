@@ -139,8 +139,7 @@ export const applyCoupenCode = async(req ,res) => {
       return res.status(200).json({
         success: true,
         message: 'Coupon code applied successfully',
-        discountAmount,
-        finalAmount,
+        discountPercentage : coupon.discountPercentage
       });
 
     }

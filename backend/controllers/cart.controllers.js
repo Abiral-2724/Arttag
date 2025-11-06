@@ -230,8 +230,14 @@ export const gettingAllProductOfUserCart = async(req ,res) => {
         let totalOrginalPrice = 0 ;
         let totalItems = 0 ; 
         let totalDiscount = 0 ;
+        let couponCode = null;
+        let couponDiscountPercentage = 0;
 
         for(let c of cart){
+            if (c.couponCode) {
+                couponCode = c.couponCode;
+                couponDiscountPercentage = c.couponDiscountPercentage || 0;
+            }
             totalItems = totalItems + c.quantity ;
             totalOrginalPrice = totalOrginalPrice + (c.product.originalPrice * c.quantity) ; 
             totalDiscount = totalDiscount + ((c.quantity*c.product.originalPrice) - (c.quantity*c.product.discountPrice))
@@ -249,6 +255,8 @@ export const gettingAllProductOfUserCart = async(req ,res) => {
             totalDiscount : totalDiscount ,
             grandTotal : grandTotal ,
             priceSaved : priceSaved ,
+            couponCode: couponCode,
+            couponDiscountPercentage: couponDiscountPercentage,
             cart : cart
         })
 
@@ -428,6 +436,45 @@ export const getTotalCountOfProductInCart = async(req ,res) =>{
           });
         }
       };
+
+export const addCoupenDiscountAmountToTheCart = async(req ,res) => {
+
+    try{
+            const {userId ,couponCode, couponDiscountPercentage} = req.body ; 
+
+            if(!userId ){
+                return res.status(400).json({
+                    success : false ,
+                    message : 'all fields are required'
+                })
+            }
+
+            const updateCartItem = await client.cartItems.updateMany({
+                where : {
+                    ownerId : userId
+                } ,
+                data:{
+                    couponCode : couponCode ,
+                    couponDiscountPercentage : couponDiscountPercentage
+                }
+            })
+
+            return res.status(200).json({
+                success : true ,
+                    message : 'product coupen discount amount got updated'
+           })
+
+
+    }
+    catch(e){
+        console.log(e);
+        return res.status(500).json({
+          success: false,
+          message: 'error while adding coupen discount amount to the cartitems, please try again later!',
+        });
+    }
+
+}
       
 export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => {
     try{
@@ -452,7 +499,14 @@ export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => 
             let totalItem = 0 ;
             let totalamount = 0 ;
             let shippingCharge = 0 ; 
+            let couponCode = null;
+            let couponDiscountPercentage = 0 ; 
             for(let cart of cartdetails){
+                if (cart.couponCode) {
+                    couponCode = cart.couponCode;
+                    couponDiscountPercentage = cart.couponDiscountPercentage || 0;
+                }
+               
                 totalItem = totalItem + cart.quantity ;
                 totalamount = totalamount + (cart.product.discountPrice*cart.quantity) ; 
             }
@@ -466,7 +520,8 @@ export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => 
                 totalItem : totalItem ,
                 totalamount : totalamount ,
                 shippingCharge : shippingCharge ,
-               
+                couponCode : couponCode ,
+                couponDiscountPercentage : couponDiscountPercentage
             })
     }
     catch(e){
@@ -477,3 +532,4 @@ export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => 
         });
     }
 }
+

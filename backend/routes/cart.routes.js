@@ -1,5 +1,5 @@
 import express from "express" 
-import { addingProductToUserCart, decreaseProductcount, deletingProductFromUserCart, gettingAllProductOfUserCart, getTotalCountOfProductInCart, getTotalProductUserCartOrderDetailsWithUserId, increaseProductcount, moveFromCartToWishList } from "../controllers/cart.controllers.js";
+import { addCoupenDiscountAmountToTheCart, addingProductToUserCart, decreaseProductcount, deletingProductFromUserCart, gettingAllProductOfUserCart, getTotalCountOfProductInCart, getTotalProductUserCartOrderDetailsWithUserId, increaseProductcount, moveFromCartToWishList } from "../controllers/cart.controllers.js";
 
 const router = express.Router() ;
 
@@ -17,5 +17,7 @@ router.patch('/move/product/cart/to/wishlist' ,moveFromCartToWishList) ;
 router.get('/:userId/get/product/total/count' ,getTotalCountOfProductInCart);
 
 router.get('/:userId/cart/summary' ,getTotalProductUserCartOrderDetailsWithUserId)
+
+router.patch('/add/coupendiscount/amount' ,addCoupenDiscountAmountToTheCart)
 
 export default router;

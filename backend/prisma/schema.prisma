@@ -199,6 +199,8 @@ model CartItems {
   ownerId   String
   productId String
   quantity  Int      @default(1)
+  couponCode String?
+  couponDiscountPercentage Int @default(0)
   createdAt DateTime @default(now())
 
   owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
