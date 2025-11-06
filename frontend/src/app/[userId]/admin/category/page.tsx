@@ -126,7 +126,7 @@ const CategoryManagement = () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/category/get/${categoryId}/all/subcategory`);
       if (response.data.success) {
-        const sortedSubcategories = (response.data.subcategories || []).sort((a, b) => {
+        const sortedSubcategories = (response.data.subcategories || []).sort((a, b)  => {
           if (a.createdAt && b.createdAt) {
             return new Date(b.createdAt) - new Date(a.createdAt);
           }

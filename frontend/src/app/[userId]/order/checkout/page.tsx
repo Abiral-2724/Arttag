@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { ArrowLeft, MapPin, Loader2, Edit, Plus, ShoppingBag, Truck, CreditCard, CheckCircle2, Package } from 'lucide-react';
+import { ArrowLeft, MapPin, Loader2, Edit, Plus, ShoppingBag, Truck, CreditCard, CheckCircle2, Package, Tag, Percent } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
@@ -14,12 +14,14 @@ import Link from 'next/link';
 import { Spinner } from '@/components/ui/spinner';
 
 export default function CheckoutPage() {
-  const [addresses, setAddresses] = useState([]);
+  const [addresses, setAddresses] : any = useState([]);
   const [selectedAddress, setSelectedAddress] = useState('');
   const [orderSummary, setOrderSummary] = useState({
     totalItem: 0,
     totalamount: 0,
-    shippingCharge: 0
+    shippingCharge: 0,
+    couponCode: null,
+    couponDiscountPercentage: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -43,7 +45,7 @@ export default function CheckoutPage() {
   });
 
   const { userId } = useParams();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   useEffect(() => {
     fetchAddresses();
@@ -78,7 +80,9 @@ export default function CheckoutPage() {
         setOrderSummary({
           totalItem: data.totalItem,
           totalamount: data.totalamount,
-          shippingCharge: data.shippingCharge
+          shippingCharge: data.shippingCharge,
+          couponCode: data.couponCode || null,
+          couponDiscountPercentage: data.couponDiscountPercentage || 0
         });
       } else {
         setError(data.message || 'Failed to load cart details');
@@ -199,7 +203,17 @@ export default function CheckoutPage() {
     return addresses.find((addr : any) => addr.id === selectedAddress);
   };
 
-  const grandTotal = orderSummary.totalamount + orderSummary.shippingCharge;
+  // Calculate coupon discount amount
+  const couponDiscountAmount = orderSummary.couponDiscountPercentage > 0
+  ? Math.round((orderSummary.totalamount * orderSummary.couponDiscountPercentage) / 100)
+  : 0;
+
+
+  // Calculate amount after discount
+  const amountAfterDiscount = orderSummary.totalamount - couponDiscountAmount;
+
+  // Calculate grand total
+  const grandTotal = amountAfterDiscount + orderSummary.shippingCharge;
 
   const handleContinue = () => {
     if (!selectedAddress) {
@@ -212,6 +226,8 @@ export default function CheckoutPage() {
       billingAddress: getSelectedAddressDetails(),
       orderSummary: {
         ...orderSummary,
+        couponDiscountAmount,
+        amountAfterDiscount,
         grandTotal
       }
     };
@@ -222,21 +238,18 @@ export default function CheckoutPage() {
   if (loading) {
     return (
       <div>
-
-      
-        <Navbar></Navbar>
-         <div className="flex flex-col items-center justify-center h-screen gap-2 text-lg font-medium">
-                <Spinner className='text-blue-700 text-5xl'></Spinner>
-                <p className="text-gray-600 text-sm">Loading order summary</p>
-              </div>  
-      
-              </div>
+        <Navbar />
+        <div className="flex flex-col items-center justify-center h-screen gap-2 text-lg font-medium">
+          <Spinner className='text-blue-700 text-5xl' />
+          <p className="text-gray-600 text-sm">Loading order summary</p>
+        </div>  
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-teal-50">
-     <Navbar></Navbar>
+      <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {error && (
           <Alert variant="destructive" className="mb-6 max-w-2xl mx-auto border-red-200 bg-red-50">
@@ -273,7 +286,7 @@ export default function CheckoutPage() {
                 ) : (
                   <>
                     <RadioGroup value={selectedAddress} onValueChange={setSelectedAddress} className="space-y-3">
-                      {addresses.map((address : any) => (
+                      {addresses.map((address) => (
                         <div 
                           key={address.id} 
                           className={`relative flex items-start space-x-4 p-5 border-2 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-md ${
@@ -331,16 +344,15 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
 
-                <Link href={`/${userId}/cart`}>
-                <Button 
-              variant="ghost" 
-              className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 flex items-center gap-2 font-semibold text-base"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to Cart
-            </Button>
-                </Link>
-          
+            <Link href={`/${userId}/cart`}>
+              <Button 
+                variant="ghost" 
+                className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 flex items-center gap-2 font-semibold text-base"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Back to Cart
+              </Button>
+            </Link>
           </div>
 
           {/* Order Summary Sidebar */}
@@ -362,6 +374,35 @@ export default function CheckoutPage() {
                     <span className="font-semibold text-slate-900">₹{orderSummary.totalamount.toLocaleString()}</span>
                   </div>
 
+                  {/* Coupon Discount Section - Only show if discount > 0 */}
+                  {orderSummary.couponDiscountPercentage > 0 && (
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border-2 border-green-300">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Tag className="w-5 h-5 text-green-600" />
+                        <span className="font-bold text-green-800 text-sm">Coupon Applied</span>
+                      </div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-sm text-slate-700 font-medium">{orderSummary.couponCode}</span>
+                        <span className="flex items-center gap-1 text-green-700 font-bold">
+                          
+                          {orderSummary.couponDiscountPercentage}% OFF
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-green-200 mt-2">
+                        <span className="text-sm text-slate-600">Discount Amount</span>
+                        <span className="font-bold text-green-600">-₹{couponDiscountAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Amount After Discount - Only show if discount > 0 */}
+                  {orderSummary.couponDiscountPercentage > 0 && (
+                    <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+                      <span className="text-slate-600 font-medium">Subtotal After Discount</span>
+                      <span className="font-bold text-green-600">₹{amountAfterDiscount.toLocaleString()}</span>
+                    </div>
+                  )}
+
                   <div className="flex justify-between items-center pb-3 border-b border-slate-200">
                     <div className="flex items-center gap-2 text-slate-600">
                       <Truck className="w-4 h-4" />
@@ -381,6 +422,11 @@ export default function CheckoutPage() {
                       <span className="text-lg font-bold text-slate-900">Total Amount</span>
                       <span className="text-2xl font-bold text-blue-900">₹{grandTotal.toLocaleString()}</span>
                     </div>
+                    {orderSummary.couponDiscountPercentage > 0 && (
+                      <p className="text-xs text-green-700 font-medium mt-1">
+                        You saved ₹{couponDiscountAmount.toLocaleString()} with this coupon!
+                      </p>
+                    )}
                     <p className="text-xs text-slate-600 mt-1">All taxes included</p>
                   </div>
                 </div>

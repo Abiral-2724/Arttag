@@ -17,37 +17,39 @@ import {
 import Footer from '../components/Footer'
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const carouselSlides = [
   {
     title: 'POP ADAPTERS',
     subtitle: "India's 1st Foldable Pin Adapter.",
     image: 'https://images.dailyobjects.com/marche/assets/images/other-2/Pop-cable-carousal-banner-desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
-    link: '/products'
+    link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1'
   },
   {
     title: 'STACK COLLECTION',
     subtitle: 'Organize Your Space.',
     image: 'https://images.dailyobjects.com/marche/colllectionPage/stack-collection/stack_collection_hero_banner_desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
-    link: '/products'
+    link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0'
   },
   {
     title: '',
     subtitle: '',
     image: 'https://images.dailyobjects.com/marche/colllectionPage/puft/PUFT-UNIT_Desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
-    link: '/products'
+    link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135'
   },
   {
     title: 'WATCHBANDS',
     subtitle: 'Upgrade your watch drobe with our latest styles.',
     image: 'https://images.dailyobjects.com/marche/assets/images/other-2/watchbands-carousals-banner-desktop.jpg?tr=cm-pad_crop,v-3,w-1440,dpr-2',
-    link: '/products'
+    link: 'product/category/6578853f-a315-4c27-acd2-d1ca33f55135'
   },
   {
+    
     title: 'LOOP POWER BANKS',
     subtitle: 'Qi2-Certified, Next-Gen Fast Wireless Charging.',
     image: 'https://images.dailyobjects.com/marche/assets/images/other-2/desktop_herobanner_loop.jpg?tr=cm-pad_crop,v-3,w-360,dpr-4',
-    link: '/products'
+    link: '/product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17'
   },
 ];
 
@@ -158,6 +160,7 @@ export default function DailyObjectsReplica() {
         
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {/* Tech Accessories Card */}
+          <Link href='product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1'>
           <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
             <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
               <img 
@@ -177,8 +180,11 @@ export default function DailyObjectsReplica() {
               </div>
             </div>
           </div>
+          </Link>
+        
 
           {/* Bags & Wallets Card */}
+          <Link href={'product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0'}>
           <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
             <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
               <img 
@@ -198,8 +204,11 @@ export default function DailyObjectsReplica() {
               </div>
             </div>
           </div>
+          </Link>
+       
 
           {/* Work Essentials Card */}
+          <Link href={'product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17'}>
           <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
             <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
               <img 
@@ -219,6 +228,8 @@ export default function DailyObjectsReplica() {
               </div>
             </div>
           </div>
+          </Link>
+         
         </div>
       </section>
 

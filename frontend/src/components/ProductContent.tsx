@@ -19,7 +19,12 @@ type Props = {}
 const ProductContent = ({fetchSubcategories ,countProduct} : any) => {
     const API_BASE_URL =  process.env.NEXT_PUBLIC_API_BASE_URL ;
    
-const USER_ID = '615be6a6-3e3f-42bc-aef7-568c064f34ce';
+
+let USER_ID : any ;
+
+if(localStorage.getItem('arttagUserId')){
+  USER_ID = localStorage.getItem('arttagUserId') ; 
+}
 
 const [productsLoading, setProductsLoading] = useState(false);
 const [showAddProductDialog, setShowAddProductDialog] = useState(false);

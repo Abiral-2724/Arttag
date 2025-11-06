@@ -46,11 +46,11 @@ const FooterPart = (props: Props) => {
             <div className="space-y-4">
               <h3 className="font-semibold text-base text-gray-900 mb-3">Helpdesk</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Contact Us</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">FAQs</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Terms Of Use</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Warranty Policy</a></li>
-                <li><a href="#" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Privacy & Security Policy</a></li>
+                <li><a href="/contactus" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Contact Us</a></li>
+                <li><a href="/faq" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">FAQs</a></li>
+                <li><a href="/termsofuse" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Terms Of Use</a></li>
+                <li><a href="/warrantypolicy" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Warranty Policy</a></li>
+                <li><a href="/privacyandSecurity" className="text-sm text-gray-600 hover:text-emerald-600 transition-colors">Privacy & Security Policy</a></li>
               </ul>
             </div>
           </div>

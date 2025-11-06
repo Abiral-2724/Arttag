@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Trash2, Minus, Plus, Gift, Tag, CreditCard, ChevronDown, X, ShoppingBag, Loader2 } from 'lucide-react';
+import { Trash2, Minus, Plus, Gift, Tag, CreditCard, ChevronDown, X, ShoppingBag, Loader2, Check } from 'lucide-react';
 import axios from 'axios';
 import {
   AlertDialog,
@@ -28,6 +28,12 @@ const ShoppingCart = () => {
   const [selectedProduct, setSelectedProduct] : any = useState(null);
   const [processingItems, setProcessingItems] = useState({});
   
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] : any = useState(null);
+  const [couponError, setCouponError] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  
   const { userId } = useParams();
  
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -36,6 +42,12 @@ const ShoppingCart = () => {
     fetchCartData();
   }, []);
 
+  // Recalculate coupon discount when cart changes
+  const recalculateCouponDiscount = (newGrandTotal, discountPercentage) => {
+    return Math.round((newGrandTotal * discountPercentage) / 100);
+  };
+  
+
   const fetchCartData = async () => {
     try {
       setLoading(true);
@@ -43,6 +55,22 @@ const ShoppingCart = () => {
       
       if (response.data.success) {
         setCartData(response.data);
+        
+        // Restore coupon if it was previously applied
+        console.log(response.data)
+        if (response.data.couponCode && response.data.couponDiscountPercentage) {
+          const discountAmount = recalculateCouponDiscount(
+            response.data.grandTotal, 
+            response.data.couponDiscountPercentage
+          );
+          
+          setAppliedCoupon({
+            code: response.data.couponCode,
+            discountPercentage: response.data.couponDiscountPercentage,
+            discountAmount: discountAmount
+          });
+          setCouponCode(response.data.couponCode);
+        }
       }
     } catch (error) {
       console.error('Error fetching cart:', error);
@@ -52,7 +80,87 @@ const ShoppingCart = () => {
     }
   };
 
-  const handleDeleteClick = (product : any) => {
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    try {
+      setApplyingCoupon(true);
+      setCouponError('');
+
+      const currentDate = new Date().toISOString();
+      const totalCartAmount = cartData.grandTotal;
+
+      // Step 1: Validate coupon code
+      const validateResponse = await axios.post(`${API_BASE}/coupen/apply/coupen`, {
+        code: couponCode,
+        totalCartAmount: totalCartAmount,
+        currentDate: currentDate
+      });
+
+      if (validateResponse.data.success) {
+        const discountPercentage = validateResponse.data.discountPercentage;
+        const discountAmount = recalculateCouponDiscount(totalCartAmount, discountPercentage);
+
+        // Step 2: Update cart items with coupon discount percentage and code
+        const updateResponse = await axios.patch(`${API_BASE}/cart/add/coupendiscount/amount`, {
+          userId: userId,
+          couponCode: couponCode,
+          couponDiscountPercentage: discountPercentage
+        });
+
+        if (updateResponse.data.success) {
+          // Update local state
+          setAppliedCoupon({
+            code: couponCode,
+            discountPercentage: discountPercentage,
+            discountAmount: discountAmount
+          });
+          
+          // Refresh cart data to get updated values
+          await fetchCartData();
+          
+          alert(`Coupon applied successfully! You saved ₹${discountAmount.toFixed(2)}`);
+        } else {
+          setCouponError(updateResponse.data.message);
+        }
+      } else {
+        setCouponError(validateResponse.data.message);
+      }
+    } catch (error : any) {
+      console.error('Error applying coupon:', error);
+      setCouponError(error.response?.data?.message || 'Failed to apply coupon code');
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    try {
+      // Reset coupon discount in cart items
+      await axios.patch(`${API_BASE}/cart/add/coupendiscount/amount`, {
+        userId: userId,
+        couponCode: null,
+        couponDiscountPercentage: 0
+      });
+
+      setAppliedCoupon(null);
+      setCouponCode('');
+      setCouponError('');
+      
+      // Refresh cart data
+      await fetchCartData();
+      
+      alert('Coupon removed successfully');
+    } catch (error) {
+      console.error('Error removing coupon:', error);
+      alert('Failed to remove coupon');
+    }
+  };
+
+  const handleDeleteClick = (product) => {
     setSelectedProduct(product);
     setDeleteDialogOpen(true);
   };
@@ -70,13 +178,26 @@ const ShoppingCart = () => {
       });
       
       if (response.data.success) {
-        // Optimistic update
-        setCartData((prev : any) => {
+        // Recalculate everything including coupon
+        const itemToRemove = cartData.cart.find(item => item.productId === selectedProduct.productId);
+        const itemTotal = itemToRemove.quantity * itemToRemove.product.originalPrice;
+        const itemDiscount = (itemToRemove.quantity * itemToRemove.product.originalPrice) - 
+                            (itemToRemove.quantity * itemToRemove.product.discountPrice);
+        
+        const newGrandTotal = cartData.grandTotal - (itemTotal - itemDiscount);
+        
+        // Recalculate coupon discount based on new total
+        let newCouponDiscount = 0;
+        if (appliedCoupon) {
+          newCouponDiscount = recalculateCouponDiscount(newGrandTotal, appliedCoupon.discountPercentage);
+          setAppliedCoupon({
+            ...appliedCoupon,
+            discountAmount: newCouponDiscount
+          });
+        }
+        
+        setCartData((prev) => {
           const newCart = prev.cart.filter(item => item.productId !== selectedProduct.productId);
-          const itemToRemove = prev.cart.find(item => item.productId === selectedProduct.productId);
-          const itemTotal = itemToRemove.quantity * itemToRemove.product.originalPrice;
-          const itemDiscount = (itemToRemove.quantity * itemToRemove.product.originalPrice) - 
-                              (itemToRemove.quantity * itemToRemove.product.discountPrice);
           
           return {
             ...prev,
@@ -84,10 +205,11 @@ const ShoppingCart = () => {
             totalItems: prev.totalItems - itemToRemove.quantity,
             totalOrginalPrice: prev.totalOrginalPrice - itemTotal,
             totalDiscount: prev.totalDiscount - itemDiscount,
-            grandTotal: prev.grandTotal - (itemTotal - itemDiscount),
+            grandTotal: newGrandTotal,
             priceSaved: prev.priceSaved - itemDiscount
           };
         });
+        
         setDeleteDialogOpen(false);
         setSelectedProduct(null);
       } else {
@@ -113,13 +235,26 @@ const ShoppingCart = () => {
       });
       
       if (response.data.success) {
-        // Optimistic update
-        setCartData((prev : any) => {
+        // Recalculate everything including coupon
+        const itemToRemove = cartData.cart.find(item => item.productId === selectedProduct.productId);
+        const itemTotal = itemToRemove.quantity * itemToRemove.product.originalPrice;
+        const itemDiscount = (itemToRemove.quantity * itemToRemove.product.originalPrice) - 
+                            (itemToRemove.quantity * itemToRemove.product.discountPrice);
+        
+        const newGrandTotal = cartData.grandTotal - (itemTotal - itemDiscount);
+        
+        // Recalculate coupon discount based on new total
+        let newCouponDiscount = 0;
+        if (appliedCoupon) {
+          newCouponDiscount = recalculateCouponDiscount(newGrandTotal, appliedCoupon.discountPercentage);
+          setAppliedCoupon({
+            ...appliedCoupon,
+            discountAmount: newCouponDiscount
+          });
+        }
+        
+        setCartData((prev) => {
           const newCart = prev.cart.filter(item => item.productId !== selectedProduct.productId);
-          const itemToRemove = prev.cart.find(item => item.productId === selectedProduct.productId);
-          const itemTotal = itemToRemove.quantity * itemToRemove.product.originalPrice;
-          const itemDiscount = (itemToRemove.quantity * itemToRemove.product.originalPrice) - 
-                              (itemToRemove.quantity * itemToRemove.product.discountPrice);
           
           return {
             ...prev,
@@ -127,10 +262,11 @@ const ShoppingCart = () => {
             totalItems: prev.totalItems - itemToRemove.quantity,
             totalOrginalPrice: prev.totalOrginalPrice - itemTotal,
             totalDiscount: prev.totalDiscount - itemDiscount,
-            grandTotal: prev.grandTotal - (itemTotal - itemDiscount),
+            grandTotal: newGrandTotal,
             priceSaved: prev.priceSaved - itemDiscount
           };
         });
+        
         setDeleteDialogOpen(false);
         setSelectedProduct(null);
         alert(response.data.message);
@@ -150,8 +286,23 @@ const ShoppingCart = () => {
     try {
       setProcessingItems(prev => ({ ...prev, [productId]: true }));
       
+      const item = cartData.cart.find(i => i.productId === productId);
+      const priceIncrease = item.product.originalPrice;
+      const discountIncrease = item.product.originalPrice - item.product.discountPrice;
+      const newGrandTotal = cartData.grandTotal + item.product.discountPrice;
+      
+      // Recalculate coupon discount based on new total
+      let newCouponDiscount = 0;
+      if (appliedCoupon) {
+        newCouponDiscount = recalculateCouponDiscount(newGrandTotal, appliedCoupon.discountPercentage);
+        setAppliedCoupon({
+          ...appliedCoupon,
+          discountAmount: newCouponDiscount
+        });
+      }
+      
       // Optimistic update
-      setCartData((prev : any) => {
+      setCartData((prev) => {
         const newCart = prev.cart.map(item => {
           if (item.productId === productId) {
             return { ...item, quantity: item.quantity + 1 };
@@ -159,17 +310,13 @@ const ShoppingCart = () => {
           return item;
         });
         
-        const item = prev.cart.find(i => i.productId === productId);
-        const priceIncrease = item.product.originalPrice;
-        const discountIncrease = item.product.originalPrice - item.product.discountPrice;
-        
         return {
           ...prev,
           cart: newCart,
           totalItems: prev.totalItems + 1,
           totalOrginalPrice: prev.totalOrginalPrice + priceIncrease,
           totalDiscount: prev.totalDiscount + discountIncrease,
-          grandTotal: prev.grandTotal + item.product.discountPrice,
+          grandTotal: newGrandTotal,
           priceSaved: prev.priceSaved + discountIncrease
         };
       });
@@ -202,8 +349,23 @@ const ShoppingCart = () => {
     try {
       setProcessingItems(prev => ({ ...prev, [productId]: true }));
       
+      const item = cartData.cart.find(i => i.productId === productId);
+      const priceDecrease = item.product.originalPrice;
+      const discountDecrease = item.product.originalPrice - item.product.discountPrice;
+      const newGrandTotal = cartData.grandTotal - item.product.discountPrice;
+      
+      // Recalculate coupon discount based on new total
+      let newCouponDiscount = 0;
+      if (appliedCoupon) {
+        newCouponDiscount = recalculateCouponDiscount(newGrandTotal, appliedCoupon.discountPercentage);
+        setAppliedCoupon({
+          ...appliedCoupon,
+          discountAmount: newCouponDiscount
+        });
+      }
+      
       // Optimistic update
-      setCartData((prev : any)=> {
+      setCartData((prev) => {
         const newCart = prev.cart.map(item => {
           if (item.productId === productId) {
             return { ...item, quantity: item.quantity - 1 };
@@ -211,17 +373,13 @@ const ShoppingCart = () => {
           return item;
         });
         
-        const item = prev.cart.find(i => i.productId === productId);
-        const priceDecrease = item.product.originalPrice;
-        const discountDecrease = item.product.originalPrice - item.product.discountPrice;
-        
         return {
           ...prev,
           cart: newCart,
           totalItems: prev.totalItems - 1,
           totalOrginalPrice: prev.totalOrginalPrice - priceDecrease,
           totalDiscount: prev.totalDiscount - discountDecrease,
-          grandTotal: prev.grandTotal - item.product.discountPrice,
+          grandTotal: newGrandTotal,
           priceSaved: prev.priceSaved - discountDecrease
         };
       });
@@ -250,10 +408,9 @@ const ShoppingCart = () => {
       <>
         <Navbar/>
         <div className="flex flex-col items-center justify-center h-screen gap-2 text-lg font-medium">
-                <Spinner className='text-blue-700 text-5xl'></Spinner>
-                <p className="text-gray-600 text-sm">Loading Cart</p>
-              </div>  
-      
+          <Spinner className='text-blue-700 text-5xl'></Spinner>
+          <p className="text-gray-600 text-sm">Loading Cart</p>
+        </div>  
       </>
     );
   }
@@ -267,17 +424,20 @@ const ShoppingCart = () => {
             <ShoppingBag className="mx-auto h-24 w-24 text-gray-400 mb-4" />
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Your cart is empty</h2>
             <p className="text-gray-600 mb-6">Add some products to get started!</p>
-           <Link href={'/allcategory'}>
-           <Button className="bg-green-600 hover:bg-green-700">
-              Continue Shopping
-            </Button>
-           </Link>
-            
+            <Link href={'/allcategory'}>
+              <Button className="bg-green-600 hover:bg-green-700">
+                Continue Shopping
+              </Button>
+            </Link>
           </div>
         </div>
       </>
     );
   }
+
+  // Calculate final amount with coupon
+  const couponDiscountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const finalGrandTotal = cartData.grandTotal - couponDiscountAmount;
 
   return (
     <div>
@@ -410,6 +570,63 @@ const ShoppingCart = () => {
                       className={`transform transition-transform ${showCoupons ? 'rotate-180' : ''}`}
                     />
                   </button>
+                  
+                  {/* Coupon Input Section */}
+                  {showCoupons && (
+                    <div className="mt-4 space-y-3">
+                      {appliedCoupon ? (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Check size={18} className="text-green-600" />
+                              <span className="font-semibold text-green-800 text-sm">
+                                {appliedCoupon.code}
+                              </span>
+                            </div>
+                            <button 
+                              onClick={handleRemoveCoupon}
+                              className="text-red-600 hover:text-red-700 text-xs font-semibold"
+                            >
+                              REMOVE
+                            </button>
+                          </div>
+                          <p className="text-xs text-green-700">
+                            Coupon applied! You saved ₹{couponDiscountAmount.toFixed(2)}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={couponCode}
+                              onChange={(e) => {
+                                setCouponCode(e.target.value.toUpperCase());
+                                setCouponError('');
+                              }}
+                              placeholder="Enter coupon code"
+                              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm uppercase"
+                              disabled={applyingCoupon}
+                            />
+                            <Button
+                              onClick={handleApplyCoupon}
+                              disabled={applyingCoupon || !couponCode.trim()}
+                              className="bg-orange-600 hover:bg-orange-700 px-4 py-2 text-sm font-semibold"
+                            >
+                              {applyingCoupon ? (
+                                <Loader2 size={16} className="animate-spin" />
+                              ) : (
+                                'APPLY'
+                              )}
+                            </Button>
+                          </div>
+                          {couponError && (
+                            <p className="text-xs text-red-600 mt-1">{couponError}</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
                 
                 {/* Gift Card Section */}
@@ -445,6 +662,13 @@ const ShoppingCart = () => {
                     <span className="font-semibold">-₹{cartData.totalDiscount}</span>
                   </div>
                   
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-orange-600">
+                      <span className="text-sm">Coupon Discount ({appliedCoupon.code})</span>
+                      <span className="font-semibold">-₹{couponDiscountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between text-gray-700">
                     <span className="text-sm">Shipping</span>
                     <span className="font-semibold text-green-600">FREE</span>
@@ -454,22 +678,21 @@ const ShoppingCart = () => {
                 <div className="border-t border-gray-200 pt-4 mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-lg font-bold text-gray-900">Grand Total</span>
-                    <span className="text-2xl font-bold text-gray-900">₹{cartData.grandTotal}</span>
+                    <span className="text-2xl font-bold text-gray-900">₹{finalGrandTotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-xs text-gray-600">
                     <span>(Inclusive of Taxes)</span>
                     <span className="text-green-600 font-semibold">
-                      You Saved ₹{cartData.priceSaved}
+                      You Saved ₹{(cartData.priceSaved + couponDiscountAmount).toFixed(2)}
                     </span>
                   </div>
                 </div>
                 
                 <Link href={`/${userId}/order/checkout`}>
-                <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 active:scale-98">
-                  Proceed to Checkout
-                </Button>
+                  <Button className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 active:scale-98">
+                    Proceed to Checkout
+                  </Button>
                 </Link>
-                
                 
                 <p className="text-xs text-center text-gray-500 mt-4">
                   🔒 Secure checkout powered by SSL
@@ -481,64 +704,64 @@ const ShoppingCart = () => {
   
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-  <AlertDialogContent className="max-w-xl bg-white rounded-xl p-8 shadow-lg">
-    <div className="flex justify-between items-start mb-1">
-      <div className="flex-1">
-        <AlertDialogTitle className="text-2xl font-extrabold uppercase tracking-tight">
-          REMOVE FROM BAG ?
-        </AlertDialogTitle>
-        <AlertDialogDescription className="text-gray-800 text-base mt-2">
-          Are you sure you want to remove this product from your bag?
-        </AlertDialogDescription>
-      </div>
-      <button
-        onClick={() => setDeleteDialogOpen(false)}
-        className="ml-4 p-1 hover:bg-gray-100 rounded-full transition-colors"
-      >
-        <X size={24} />
-      </button>
-    </div>
+          <AlertDialogContent className="max-w-xl bg-white rounded-xl p-8 shadow-lg">
+            <div className="flex justify-between items-start mb-1">
+              <div className="flex-1">
+                <AlertDialogTitle className="text-2xl font-extrabold uppercase tracking-tight">
+                  REMOVE FROM BAG ?
+                </AlertDialogTitle>
+                <AlertDialogDescription className="text-gray-800 text-base mt-2">
+                  Are you sure you want to remove this product from your bag?
+                </AlertDialogDescription>
+              </div>
+              <button
+                onClick={() => setDeleteDialogOpen(false)}
+                className="ml-4 p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
-    {selectedProduct && (
-      <div className="flex items-center gap-5 mb-0 bg-gray-50 p-4">
-        <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-400 shadow-sm">
-          <img
-            src={selectedProduct.product.primaryImage1}
-            alt={selectedProduct.product.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-gray-900 font-semibold text-base line-clamp-2">
-            {selectedProduct.product.name}
-          </h3>
-          <p className="text-gray-600 mt-1 text-sm">
-            ₹{selectedProduct.product.discountPrice} × {selectedProduct.quantity}
-          </p>
-        </div>
-      </div>
-    )}
+            {selectedProduct && (
+              <div className="flex items-center gap-5 mb-0 bg-gray-50 p-4">
+                <div className="w-24 h-24 rounded-lg overflow-hidden border border-gray-400 shadow-sm">
+                  <img
+                    src={selectedProduct.product.primaryImage1}
+                    alt={selectedProduct.product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-gray-900 font-semibold text-base line-clamp-2">
+                    {selectedProduct.product.name}
+                  </h3>
+                  <p className="text-gray-600 mt-1 text-sm">
+                    ₹{selectedProduct.product.discountPrice} × {selectedProduct.quantity}
+                  </p>
+                </div>
+              </div>
+            )}
 
-    <AlertDialogFooter className="flex flex-row justify-between gap-4 mt-0 ml-5">
-      <Button
-        variant="outline"
-        onClick={handleConfirmDelete}
-        disabled={processingItems[selectedProduct?.productId]}
-        className="w-1/2 py-6 text-sm font-extrabold uppercase border-2 border-blue-500 text-blue-600 hover:bg-blue-100 transition-all"
-      >
-        {processingItems[selectedProduct?.productId] ? 'Removing...' : 'Remove'}
-      </Button>
+            <AlertDialogFooter className="flex flex-row justify-between gap-4 mt-0 ml-5">
+              <Button
+                variant="outline"
+                onClick={handleConfirmDelete}
+                disabled={processingItems[selectedProduct?.productId]}
+                className="w-1/2 py-6 text-sm font-extrabold uppercase border-2 border-blue-500 text-blue-600 hover:bg-blue-100 transition-all"
+              >
+                {processingItems[selectedProduct?.productId] ? 'Removing...' : 'Remove'}
+              </Button>
 
-      <Button
-        onClick={handleMoveToWishlist}
-        disabled={processingItems[selectedProduct?.productId]}
-        className="w-1/2 py-6 text-sm font-extrabold uppercase bg-blue-800 hover:bg-blue-700 text-white transition-all"
-      >
-        {processingItems[selectedProduct?.productId] ? 'Moving...' : 'Move to Wishlist'}
-      </Button>
-    </AlertDialogFooter>
-  </AlertDialogContent>
-</AlertDialog>
+              <Button
+                onClick={handleMoveToWishlist}
+                disabled={processingItems[selectedProduct?.productId]}
+                className="w-1/2 py-6 text-sm font-extrabold uppercase bg-blue-800 hover:bg-blue-700 text-white transition-all"
+              >
+                {processingItems[selectedProduct?.productId] ? 'Moving...' : 'Move to Wishlist'}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
       </div>
       <div className="border-t border-gray-300 my-0"></div>
