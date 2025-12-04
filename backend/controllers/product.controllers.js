@@ -581,139 +581,134 @@ export const getProductBySpecificType = async (req, res) => {
   };
 
 
-export const searchProduct = async(req ,res) => {
-  try{
-    const query = req.query.q ;
-
-    if (!query || query.trim().length === 0) {
-      return res.json({ results: [] });
-    }
-
-    const searchTerm = query.trim().toLowerCase();
-    const results = [];
-
-    const categories = await client.category.findMany({
-      where: {
-        name: {
-          contains: searchTerm,
-          mode: 'insensitive',
+  export const searchProduct = async (req, res) => {
+    try {
+      const query = req.query.q;
+  
+      if (!query || query.trim().length === 0) {
+        return res.json({ results: [] });
+      }
+  
+      const searchTerm = query.trim().toLowerCase();
+      const results = [];
+  
+      // -----------------------------------
+      // 1. Search Parent Categories
+      // -----------------------------------
+      const categories = await client.category.findMany({
+        where: {
+          name: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+          parentId: null,
         },
-        parentId: null, // Only parent categories
-      },
-      select: {
-        id: true,
-        name: true,
-      },
-      take: 5,
-    });
-
-    categories.forEach((category) => {
-      results.push({
-        type: 'category',
-        id: category.id,
-        name: category.name,
-        url: `/product/category/${category.id}`,
+        select: { id: true, name: true },
+        take: 5,
       });
-    });
-
-    const subcategories = await client.category.findMany({
-      where: {
-        name: {
-          contains: searchTerm,
-          mode: 'insensitive',
-        },
-        parentId: { not: null }, // Only subcategories
-      },
-      select: {
-        id: true,
-        name: true,
-        parentId: true,
-        parent: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      take: 5,
-    });
-
-    subcategories.forEach((subcategory) => {
-      results.push({
-        type: 'subcategory',
-        id: subcategory.id,
-        name: subcategory.name,
-        categoryId: subcategory.parentId,
-        parentCategoryId: subcategory.parentId,
-        url: `/product/category/${subcategory.parentId}/subcategory/${subcategory.id}/${subcategory.name}`,
+  
+      categories.forEach((category) => {
+        results.push({
+          type: "category",
+          id: category.id,
+          name: category.name,
+          url: `/product/category/${category.id}`,
+        });
       });
-    });
-
-    const products = await client.product.findMany({
-      where: {
-        OR: [
-          {
-            name: {
-              contains: searchTerm,
-              mode: 'insensitive',
-            },
+  
+      // -----------------------------------
+      // 2. Search Subcategories
+      // -----------------------------------
+      const subcategories = await client.category.findMany({
+        where: {
+          name: {
+            contains: searchTerm,
+            mode: "insensitive",
           },
-          {
-            tags: {
-              hasSome: [searchTerm],
-            },
-          },
-        ],
-      },
-      select: {
-        id: true,
-        name: true,
-        categoryId: true,
-        primaryImage1: true,
-      },
-      take: 10,
-    });
-
-    // For each product, get the category hierarchy
-    for (const product of products) {
-      // Get the subcategory (product's direct category)
-      const subcategory = await client.category.findUnique({
-        where: { id: product.categoryId },
+          parentId: { not: null },
+        },
         select: {
           id: true,
           name: true,
           parentId: true,
+          parent: { select: { id: true, name: true } },
         },
+        take: 5,
       });
-
-      if (subcategory) {
-        // The subcategory's parent is the main category
-        const categoryId = subcategory.parentId;
-        const subcategoryId = subcategory.id;
-        const subcategoryName = encodeURIComponent(subcategory.name);
-
+  
+      subcategories.forEach((subcategory) => {
         results.push({
-          type: 'product',
+          type: "subcategory",
+          id: subcategory.id,
+          name: subcategory.name,
+          categoryId: subcategory.parentId,
+          url: `/product/category/${subcategory.parentId}/subcategory/${subcategory.id}/${encodeURIComponent(
+            subcategory.name
+          )}`,
+        });
+      });
+  
+      // -----------------------------------
+      // 3. Search Products (name only)
+      // -----------------------------------
+      const products = await client.product.findMany({
+        where: {
+          name: {
+            contains: searchTerm,
+            mode: "insensitive",
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          categoryId: true,
+          primaryImage1: true,
+        },
+        take: 10,
+      });
+  
+      // -----------------------------------
+      // 4. Batch fetch category hierarchy
+      // -----------------------------------
+      const categoryIds = [...new Set(products.map((p) => p.categoryId))];
+  
+      const categoryMapArr = await client.category.findMany({
+        where: { id: { in: categoryIds } },
+        select: { id: true, name: true, parentId: true },
+      });
+  
+      const categoryMap = {};
+      categoryMapArr.forEach((c) => (categoryMap[c.id] = c));
+  
+      // -----------------------------------
+      // 5. Add Products to final results
+      // -----------------------------------
+      products.forEach((product) => {
+        const subcat = categoryMap[product.categoryId];
+        if (!subcat) return;
+  
+        results.push({
+          type: "product",
           id: product.id,
           name: product.name,
-          categoryId: categoryId,
-          subcategoryId: subcategoryId,
-          url: `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}/${product.id}`,
+          categoryId: subcat.parentId,
+          subcategoryId: subcat.id,
+          url: `/product/category/${subcat.parentId}/subcategory/${
+            subcat.id
+          }/${encodeURIComponent(subcat.name)}/${product.id}`,
         });
-      }
-    }
-
-    return res.json({ 
-      results: results.slice(0, 15), // Limit total results to 15
-      query: query 
-    });
-
-  }catch(e){
-    console.error("Error getting types:", e);
+      });
+  
+      return res.json({
+        results: results.slice(0, 15),
+        query: query,
+      });
+    } catch (e) {
+      console.error("🔴 SEARCH API ERROR:", e);
       return res.status(500).json({
         success: false,
-        message: "Error while performing search ! please try again later",
+        message: "Error while performing search! Please try again later.",
       });
-  }
-}
+    }
+  };
   
