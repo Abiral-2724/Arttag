@@ -592,7 +592,7 @@ export const searchProduct = async(req ,res) => {
     const searchTerm = query.trim().toLowerCase();
     const results = [];
 
-    const categories = await prisma.category.findMany({
+    const categories = await client.category.findMany({
       where: {
         name: {
           contains: searchTerm,
@@ -616,7 +616,7 @@ export const searchProduct = async(req ,res) => {
       });
     });
 
-    const subcategories = await prisma.category.findMany({
+    const subcategories = await client.category.findMany({
       where: {
         name: {
           contains: searchTerm,
@@ -649,7 +649,7 @@ export const searchProduct = async(req ,res) => {
       });
     });
 
-    const products = await prisma.product.findMany({
+    const products = await client.product.findMany({
       where: {
         OR: [
           {
@@ -677,7 +677,7 @@ export const searchProduct = async(req ,res) => {
     // For each product, get the category hierarchy
     for (const product of products) {
       // Get the subcategory (product's direct category)
-      const subcategory = await prisma.category.findUnique({
+      const subcategory = await client.category.findUnique({
         where: { id: product.categoryId },
         select: {
           id: true,
