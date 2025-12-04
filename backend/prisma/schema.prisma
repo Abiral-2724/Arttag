@@ -201,6 +201,11 @@ model CartItems {
   quantity  Int      @default(1)
   couponCode String?
   couponDiscountPercentage Int @default(0)
+  addAsGift Boolean @default(false)
+  chargeForGift Int @default(0)
+  giftRecipentname String @default("None")
+  giftSendername String @default("None")
+  giftMessageFromSender String @default("None")
   createdAt DateTime @default(now())
 
   owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
@@ -217,4 +222,9 @@ model CouponsCode {
   validUntil     DateTime?
   isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
+}
+
+model Pincode {
+id             String    @id @default(uuid())
+pincode Int
 }

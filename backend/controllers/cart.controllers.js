@@ -475,6 +475,7 @@ export const addCoupenDiscountAmountToTheCart = async(req ,res) => {
     }
 
 }
+
       
 export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => {
     try{
@@ -500,11 +501,18 @@ export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => 
             let totalamount = 0 ;
             let shippingCharge = 0 ; 
             let couponCode = null;
+            let addAsGiftPrice = 0 ; 
+            let isAddingAsGift = false ; 
             let couponDiscountPercentage = 0 ; 
             for(let cart of cartdetails){
                 if (cart.couponCode) {
                     couponCode = cart.couponCode;
                     couponDiscountPercentage = cart.couponDiscountPercentage || 0;
+                }
+
+                if(cart.addAsGift){
+                    isAddingAsGift = true ;
+                    addAsGiftPrice = cart.chargeForGift ; 
                 }
                
                 totalItem = totalItem + cart.quantity ;
@@ -521,7 +529,10 @@ export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => 
                 totalamount : totalamount ,
                 shippingCharge : shippingCharge ,
                 couponCode : couponCode ,
-                couponDiscountPercentage : couponDiscountPercentage
+                couponDiscountPercentage : couponDiscountPercentage,
+                isAddingAsGift : isAddingAsGift ,
+                addAsGiftPrice : addAsGiftPrice ,
+
             })
     }
     catch(e){
@@ -533,3 +544,76 @@ export const getTotalProductUserCartOrderDetailsWithUserId = async(req ,res) => 
     }
 }
 
+export const addCartItemsAsAGift = async(req ,res) => {
+    try{
+            const {ownerId ,recipentName ,senderName ,messageFromSender} = req.body ; 
+
+            if(!ownerId){
+                return res.status(400).json({
+                    success : false ,
+                    message : 'owner id is required'
+                })
+            }
+
+            const updateTheCartItem = await client.cartItems.updateMany({
+                where : {
+                    ownerId : ownerId
+                } ,
+                data : {
+                    addAsGift : true ,
+                    chargeForGift : 250,
+                    giftRecipentname : recipentName ,
+                    giftSendername : senderName ,
+                    giftMessageFromSender : messageFromSender
+                }
+            })
+
+            return res.status(200).json({
+                success : true ,
+                    message : 'user cart items added as gift' ,
+                    updateTheCartItem : updateTheCartItem
+           })
+
+    }catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'error adding items as gift'
+        })
+    }
+}
+
+export const removeCartItemsFromGift = async(req ,res) => {
+    try{
+        const {ownerId} = req.body ; 
+
+            if(!ownerId){
+                return res.status(400).json({
+                    success : false ,
+                    message : 'owner id is required'
+                })
+            }
+
+            const updateTheCartItem = await client.cartItems.updateMany({
+                where : {
+                    ownerId : ownerId
+                } ,
+                data : {
+                    addAsGift : false ,
+                    chargeForGift : 0
+                }
+            })
+
+            return res.status(200).json({
+                success : true ,
+                    message : 'user cart items removed from as gift'
+           })
+    }
+    catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'error adding items as gift'
+        })
+    }
+}

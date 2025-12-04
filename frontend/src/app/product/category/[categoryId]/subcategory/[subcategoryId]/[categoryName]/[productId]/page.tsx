@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Check, Gift, Tag, Package, CreditCard, RotateCcw, Heart, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Gift, Tag, Package, CreditCard, RotateCcw, Heart, Loader2, Share2, X, Copy, Check as CheckIcon } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Accordion,
@@ -13,6 +13,7 @@ import axios from 'axios';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Spinner } from '@/components/ui/spinner';
+import Link from 'next/link';
 
 const ProductDetailPage = () => {
   const [product, setProduct] : any = useState(null);
@@ -27,6 +28,8 @@ const ProductDetailPage = () => {
   const [togglingWishlist, setTogglingWishlist] = useState(false);
   const [userId, setUserId] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const {productId} = useParams();
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ; 
@@ -193,14 +196,121 @@ const ProductDetailPage = () => {
     }
   };
 
+  // Share functionality
+  const getProductUrl = () => {
+    if (typeof window !== 'undefined') {
+      return window.location.href;
+    }
+    return '';
+  };
+
+  const getShareText = () => {
+    return `Check out ${product?.name} for ₹${product?.discountPrice}!`;
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getProductUrl());
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (err) {
+      alert('Failed to copy link');
+    }
+  };
+
+  const handleShare = (platform: string) => {
+    const url = encodeURIComponent(getProductUrl());
+    const text = encodeURIComponent(getShareText());
+    let shareUrl = '';
+
+    switch (platform) {
+      case 'whatsapp':
+        shareUrl = `https://wa.me/?text=${text}%20${url}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        break;
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+        break;
+      case 'telegram':
+        shareUrl = `https://t.me/share/url?url=${url}&text=${text}`;
+        break;
+      case 'email':
+        shareUrl = `mailto:?subject=${text}&body=${url}`;
+        break;
+    }
+
+    if (shareUrl) {
+      window.open(shareUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleNativeShare = async () => {
+    if (false && navigator.share) {
+
+      try {
+        await navigator.share({
+          title: product?.name,
+          text: getShareText(),
+          url: getProductUrl(),
+        });
+      } catch (err) {
+        // User cancelled or share failed
+      }
+    } else {
+      setShowShareModal(true);
+    }
+  };
+
   if (loading) {
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center">
-        <Spinner className='text-blue-700 text-5xl'></Spinner>
-        <p className="text-gray-600 text-sm">Loading product</p>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 flex flex-col items-center justify-center p-6">
+      <Link href={'/'} className="mb-4">
+        <div className="flex items-center gap-2 transition-transform hover:scale-105 duration-300">
+          <div className="w-auto h-16">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 270 54"
+              className="h-full w-auto drop-shadow-md"
+            >
+              <defs>
+                <style>
+                  {`
+                  .st0 {
+                    font-family: MuktaMahee-Regular, 'Mukta Mahee';
+                    font-size: 49.69px;
+                  }
+                  `}
+                </style>
+              </defs>
+              <g>
+                <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
+                <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
+                <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
+              </g>
+              <text className="st0" transform="translate(84.95 40.38)">
+                <tspan x="0" y="0">Arttag</tspan>
+              </text>
+            </svg>
+          </div>
+        </div>
+      </Link>
+      
+      <div className="flex flex-col items-center gap-5">
+        <div className="relative">
+          <Spinner className='text-blue-600 text-6xl'></Spinner>
+          <div className="absolute inset-0 bg-blue-500 opacity-20 blur-xl rounded-full"></div>
+        </div>
+        <div className="text-center">
+          <p className="text-gray-700 text-base font-semibold">Loading product</p>
+          <p className="text-gray-500 text-xs mt-1">Please wait a moment...</p>
         </div>
       </div>
+    </div>
     );
   }
 
@@ -218,7 +328,7 @@ const ProductDetailPage = () => {
   const discount = Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pb-24 md:pb-0">
       <Navbar />
       <div className="">
         <div className="grid md:grid-cols-2 gap-8 bg-white shadow-sm">
@@ -238,7 +348,7 @@ const ProductDetailPage = () => {
                 <button
                   onClick={handleToggleWishlist}
                   disabled={togglingWishlist}
-                  className={`absolute top-4 right-4 p-3 rounded-full shadow-lg transition-all ${
+                  className={`absolute top-4 right-18 p-3 rounded-full shadow-lg transition-all ${
                     togglingWishlist ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
                   } ${isInWishlist ? 'bg-red-500' : 'bg-white/90'}`}
                 >
@@ -249,6 +359,14 @@ const ProductDetailPage = () => {
                   />
                 </button>
               )}
+
+              {/* Share Button */}
+              <button
+                onClick={handleNativeShare}
+                className="absolute top-4 right-4 p-3 rounded-full shadow-lg transition-all hover:scale-110 bg-white/90"
+              >
+                <Share2 className="w-6 h-6 text-gray-700" />
+              </button>
               
               {images.length > 1 && (
                 <>
@@ -320,11 +438,11 @@ const ProductDetailPage = () => {
               </div>
             </div>
 
-            {/* Add to Cart Button */}
+            {/* Add to Cart Button - Desktop Only */}
             <button
               onClick={handleAddToCart}
               disabled={addingToCart}
-              className={`w-[76%] py-3 rounded-lg font-medium text-lg transition-colors ${
+              className={`hidden md:block w-[76%] py-3 rounded-lg font-medium text-lg transition-colors ${
                 addingToCart
                   ? 'bg-gray-400 cursor-not-allowed'
                   : !isLoggedIn
@@ -512,6 +630,130 @@ const ProductDetailPage = () => {
 
       <div className="border-t border-gray-300"></div>
       <Footer />
+
+      {/* Sticky Add to Cart Button - Mobile Only */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
+        <button
+          onClick={handleAddToCart}
+          disabled={addingToCart}
+          className={`w-full py-4 rounded-lg font-medium text-lg transition-colors ${
+            addingToCart
+              ? 'bg-gray-400 cursor-not-allowed'
+              : !isLoggedIn
+              ? 'bg-blue-700 hover:bg-blue-600'
+              : isInCart
+              ? 'bg-amber-800 hover:bg-amber-700'
+              : 'bg-blue-700 hover:bg-blue-600'
+          } text-white`}
+        >
+          {addingToCart 
+            ? 'ADDING...' 
+            : !isLoggedIn 
+            ? 'LOGIN TO ADD TO CART' 
+            : isInCart 
+            ? 'GO TO CART' 
+            : 'ADD TO CART'}
+        </button>
+      </div>
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="text-2xl font-semibold mb-6">Share Product</h2>
+
+            {/* Social Media Buttons */}
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => handleShare('whatsapp')}
+                className="w-full flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold">
+                  W
+                </div>
+                <span className="font-medium">Share on WhatsApp</span>
+              </button>
+
+              <button
+                onClick={() => handleShare('facebook')}
+                className="w-full flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">
+                  f
+                </div>
+                <span className="font-medium">Share on Facebook</span>
+              </button>
+
+              <button
+                onClick={() => handleShare('twitter')}
+                className="w-full flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold">
+                  𝕏
+                </div>
+                <span className="font-medium">Share on Twitter</span>
+              </button>
+
+              <button
+                onClick={() => handleShare('linkedin')}
+                className="w-full flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center text-white font-bold">
+                  in
+                </div>
+                <span className="font-medium">Share on LinkedIn</span>
+              </button>
+
+              <button
+                onClick={() => handleShare('telegram')}
+                className="w-full flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                  ✈
+                </div>
+                <span className="font-medium">Share on Telegram</span>
+              </button>
+
+              <button
+                onClick={() => handleShare('email')}
+                className="w-full flex items-center gap-4 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold">
+                  @
+                </div>
+                <span className="font-medium">Share via Email</span>
+              </button>
+            </div>
+
+            {/* Copy Link Section */}
+            <div className="pt-4 border-t border-gray-200">
+              <button
+                onClick={handleCopyLink}
+                className="w-full flex items-center justify-center gap-3 p-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                {linkCopied ? (
+                  <>
+                    <CheckIcon className="w-5 h-5 text-green-600" />
+                    <span className="font-medium text-green-600">Link Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-5 h-5" />
+                    <span className="font-medium">Copy Link</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

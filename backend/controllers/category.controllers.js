@@ -173,3 +173,27 @@ export const getallSubCategoryOfTheCategory = async (req, res) => {
   };
   
 
+export const getallSubCategory = async(req ,res) => {
+    try{
+        const subcategories = await client.category.findMany({
+            where : {
+                parentId : {
+                    not : null
+                }
+            }
+        })
+
+        return res.status(200).json({
+            success : true ,
+            message : "all subcategory found" ,
+            subcategories : subcategories
+        })
+    }catch (e) {
+            console.log(e);
+            return res.status(500).json({
+              success: false,
+              message: 'Error while fetching subcategories, please try again later!',
+            });
+          }
+    
+}

@@ -53,11 +53,11 @@ const navItems = [
     ],
     id: "6578853f-a315-4c27-acd2-d1ca33f55135"
   },
-  {
-    name: 'All CATEGORY',
-    items: [],
-    link: '/allcategory'
-  }
+  // {
+  //   name: 'All CATEGORY',
+  //   items: [],
+  //   link: '/allcategory'
+  // }
 ];
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -261,9 +261,12 @@ const Navbar = ({ page }: any) => {
                   </button>
 
                   {page !== "cart" && (
-                    <button className="group">
+                    <Link href={'/search'}>
+<button className="group">
                       <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
                     </button>
+                    </Link>
+                    
                   )}
 
                   {isAdmin && (
@@ -279,9 +282,12 @@ const Navbar = ({ page }: any) => {
               ) : (
                 <>
                   {page !== "cart" && (
-                    <button className="group">
+                    <Link href={'/search'}>
+                      <button className="group">
                       <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
                     </button>
+                    </Link>
+                  
                   )}
 
                   <Button
@@ -390,10 +396,13 @@ const Navbar = ({ page }: any) => {
                     </button>
 
                     {page !== "cart" && (
-                      <button className="flex items-center gap-3 w-full py-3 px-4 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded-lg transition-all">
+                      <Link href={'/search'}>
+                       <button className="flex items-center gap-3 w-full py-3 px-4 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded-lg transition-all">
                         <Search className="w-5 h-5 text-teal-600" />
                         Search
                       </button>
+                      </Link>
+                     
                     )}
 
                     {isAdmin && (
@@ -412,10 +421,14 @@ const Navbar = ({ page }: any) => {
                 ) : (
                   <>
                     {page !== "cart" && (
-                      <button className="flex items-center gap-3 w-full py-3 px-4 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded-lg transition-all">
+                      <Link href={'/search'}>
+                       <button className="flex items-center gap-3 w-full py-3 px-4 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded-lg transition-all"
+                      >
                         <Search className="w-5 h-5 text-teal-600" />
                         Search
                       </button>
+                      </Link>
+                     
                     )}
 
                     <Button

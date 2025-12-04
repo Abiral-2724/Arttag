@@ -579,4 +579,141 @@ export const getProductBySpecificType = async (req, res) => {
       });
     }
   };
+
+
+export const searchProduct = async(req ,res) => {
+  try{
+    const query = req.query.q ;
+
+    if (!query || query.trim().length === 0) {
+      return res.json({ results: [] });
+    }
+
+    const searchTerm = query.trim().toLowerCase();
+    const results = [];
+
+    const categories = await prisma.category.findMany({
+      where: {
+        name: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
+        parentId: null, // Only parent categories
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+      take: 5,
+    });
+
+    categories.forEach((category) => {
+      results.push({
+        type: 'category',
+        id: category.id,
+        name: category.name,
+        url: `/product/category/${category.id}`,
+      });
+    });
+
+    const subcategories = await prisma.category.findMany({
+      where: {
+        name: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
+        parentId: { not: null }, // Only subcategories
+      },
+      select: {
+        id: true,
+        name: true,
+        parentId: true,
+        parent: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      take: 5,
+    });
+
+    subcategories.forEach((subcategory) => {
+      results.push({
+        type: 'subcategory',
+        id: subcategory.id,
+        name: subcategory.name,
+        categoryId: subcategory.parentId,
+        parentCategoryId: subcategory.parentId,
+        url: `/product/category/${subcategory.parentId}/subcategory/${subcategory.id}/${subcategory.name}`,
+      });
+    });
+
+    const products = await prisma.product.findMany({
+      where: {
+        OR: [
+          {
+            name: {
+              contains: searchTerm,
+              mode: 'insensitive',
+            },
+          },
+          {
+            tags: {
+              hasSome: [searchTerm],
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        name: true,
+        categoryId: true,
+        primaryImage1: true,
+      },
+      take: 10,
+    });
+
+    // For each product, get the category hierarchy
+    for (const product of products) {
+      // Get the subcategory (product's direct category)
+      const subcategory = await prisma.category.findUnique({
+        where: { id: product.categoryId },
+        select: {
+          id: true,
+          name: true,
+          parentId: true,
+        },
+      });
+
+      if (subcategory) {
+        // The subcategory's parent is the main category
+        const categoryId = subcategory.parentId;
+        const subcategoryId = subcategory.id;
+        const subcategoryName = encodeURIComponent(subcategory.name);
+
+        results.push({
+          type: 'product',
+          id: product.id,
+          name: product.name,
+          categoryId: categoryId,
+          subcategoryId: subcategoryId,
+          url: `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}/${product.id}`,
+        });
+      }
+    }
+
+    return res.json({ 
+      results: results.slice(0, 15), // Limit total results to 15
+      query: query 
+    });
+
+  }catch(e){
+    console.error("Error getting types:", e);
+      return res.status(500).json({
+        success: false,
+        message: "Error while performing search ! please try again later",
+      });
+  }
+}
   

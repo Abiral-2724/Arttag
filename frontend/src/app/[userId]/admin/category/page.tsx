@@ -46,6 +46,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Spinner } from '@/components/ui/spinner';
 import Navbar from '@/components/Navbar';
 import FooterPart from '@/components/FooterPart';
+import Link from 'next/link';
 
 const CategoryManagement = () => {
     const { userId } = useParams();
@@ -256,6 +257,36 @@ const CategoryManagement = () => {
     {
         isChecking ? (
             <div className="flex flex-col items-center justify-center h-screen gap-2 text-lg font-medium">
+             <Link href={'/'}>
+        <div className="flex items-center gap-2">
+          <div className="w-auto h-14">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 270 54"
+              className="h-full w-auto"
+            >
+              <defs>
+                <style>
+                  {`
+                  .st0 {
+                    font-family: MuktaMahee-Regular, 'Mukta Mahee';
+                    font-size: 49.69px;
+                  }
+                  `}
+                </style>
+              </defs>
+              <g>
+                <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
+                <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
+                <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
+              </g>
+              <text className="st0" transform="translate(84.95 40.38)">
+                <tspan x="0" y="0">Arttag</tspan>
+              </text>
+            </svg>
+          </div>
+        </div>
+      </Link>
             <Spinner className='text-blue-700 text-5xl'></Spinner>
             <p className="text-gray-600 text-sm">Verifying request</p>
           </div>

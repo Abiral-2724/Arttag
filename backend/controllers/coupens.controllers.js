@@ -151,3 +151,140 @@ export const applyCoupenCode = async(req ,res) => {
         })
     }
 }
+
+export const getAllCoupens = async(req ,res) => {
+    try{
+        const coupens = await client.couponsCode.findMany({
+            orderBy: {
+                createdAt: 'desc'  // optional: newest first
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "All coupons fetched successfully",
+            coupens
+        });
+    }catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'error getting all coupens'
+        })
+    }
+}
+
+export const addPincode = async(req ,res) => {
+    try{
+        const {pincode} = req.body ; 
+        if(String(pincode).length !== 6){
+            return res.status(400).json({
+                success : false ,
+                message : 'invalid picode , please enter the correct pincode'
+            })
+        }
+        const isPincodeAvailable = await client.pincode.findFirst({
+            where : {
+                pincode : pincode
+            }
+        })
+
+        if(isPincodeAvailable){
+            return res.status(400).json({
+                success : false ,
+                message : 'Pincode already exits ! enter something else'
+            })
+        }
+
+       const creatingNewPincode =  await client.pincode.create({
+        data : {
+            pincode : pincode
+        }
+       })
+
+       return res.status(200).json({
+        success : true ,
+        message : 'Pincode added successfully' , 
+        pincode : creatingNewPincode
+    })
+
+    }catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'error adding pincode ,please try again later !'
+        })
+    }
+}
+
+export const checkPincode = async(req ,res) => {
+    try{
+        const {pincode} = req.body ; 
+        let Pincode = parseInt(pincode) ; 
+        if(String(Pincode).length !== 6){
+            return res.status(400).json({
+                success : false ,
+                message : 'invalid picode , please enter the correct pincode'
+            })
+        }
+        const isPincodeAvailable = await client.pincode.findFirst({
+            where : {
+                pincode : Pincode
+            }
+        })
+
+        if(!isPincodeAvailable){
+            return res.status(400).json({
+                success : false ,
+                message : 'Pincode not found !'
+            })
+        }
+
+        return res.status(200).json({
+            success : true ,
+            message : 'Pincode found successfully ! delivery possible' , 
+        })
+
+
+    }catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'error checking pincode ! '
+        })
+    }
+}
+
+export const getAllPincode = async(req ,res) => {
+    try{
+        const pincodes = await client.pincode.findMany({
+            orderBy: {
+                pincode: "asc"   // optional: sort lowest to highest
+            }
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "All pincodes fetched successfully",
+            pincodes,
+        });
+    }catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'error getting all pincode'
+        })
+    }
+}
+
+// export const addCartItemsAsAGift = async(req ,res) => {
+//     try{
+
+//     }catch(e){
+//         console.log(e) ; 
+//         return res.status(500).json({
+//             success : false ,
+//             message : 'error adding items as gift'
+//         })
+//     }
+// }

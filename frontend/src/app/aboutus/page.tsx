@@ -135,39 +135,58 @@ export default function AboutArttag() {
         <h2 className="text-4xl md:text-5xl font-bold text-center text-gray-900 mb-16">
           Our Founders
         </h2>
-        <div className="grid md:grid-cols-2 gap-12">
-          {/* Shivam Awasthi */}
-          <Card className="overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-            <div className="bg-gradient-to-br from-purple-500 to-pink-500 h-64 flex items-center justify-center">
-              <div className="w-48 h-48 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <span className="text-white text-6xl font-bold">SA</span>
-              </div>
-            </div>
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Shivam Awasthi</h3>
-              <p className="text-purple-600 font-medium mb-4">Co-Founder, Creative Director</p>
-              <p className="text-gray-700 leading-relaxed">
-                A visionary artist and entrepreneur, Shivam Awasthi brings creativity, storytelling, and brand emotion to Arttag. With a background in art, music, and design, he ensures every Arttag product carries a soulful personality — merging lifestyle with self-expression.
-              </p>
-            </CardContent>
-          </Card>
+        <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="text-center mb-12">
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">Meet Our Founders</h2>
+        <p className="text-lg text-gray-600">The visionaries behind Arttag</p>
+      </div>
 
-          {/* Dheeraj Awasthi */}
-          <Card className="overflow-hidden shadow-lg hover:shadow-2xl transition-shadow">
-            <div className="bg-gradient-to-br from-indigo-500 to-blue-500 h-64 flex items-center justify-center">
-              <div className="w-48 h-48 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <span className="text-white text-6xl font-bold">DA</span>
-              </div>
-            </div>
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Dheeraj Awasthi</h3>
-              <p className="text-indigo-600 font-medium mb-4">Co-Founder, Operations & Strategy</p>
-              <p className="text-gray-700 leading-relaxed">
-                With a strong focus on innovation and execution, Dheeraj Awasthi leads product development and business strategy at Arttag. His commitment to quality, structure, and performance ensures that every Arttag product delivers premium value and lasting reliability.
-              </p>
-            </CardContent>
-          </Card>
+      <div className="grid md:grid-cols-2 gap-12">
+        {/* Shivam Awasthi */}
+        <div className="overflow-hidden shadow-lg hover:shadow-2xl transition-shadow rounded-lg bg-white">
+          <div className="h-120 bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center overflow-hidden relative">
+            <img 
+              src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1764854997/IMG_1577_g0gvof.jpg" 
+              alt="Shivam Awasthi"
+              className="w-full h-full object-cover object-center opacity-0"
+              onLoad={(e) => {
+                e.currentTarget.style.opacity = '1';
+              }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            
+          </div>
+          <div className="p-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Shivam Awasthi</h3>
+            <p className="text-purple-600 font-medium mb-4">Co-Founder, Creative Director</p>
+            <p className="text-gray-700 leading-relaxed">
+              A visionary artist and entrepreneur, Shivam Awasthi brings creativity, storytelling, and brand emotion to Arttag. With a background in art, music, and design, he ensures every Arttag product carries a soulful personality — merging lifestyle with self-expression.
+            </p>
+          </div>
         </div>
+
+        {/* Dheeraj Awasthi */}
+        <div className="overflow-hidden shadow-lg hover:shadow-2xl transition-shadow rounded-lg bg-white">
+          <div className="h-120 bg-gradient-to-br from-indigo-500 to-blue-500 flex items-center justify-center overflow-hidden relative">
+            <img 
+              src="https://res.cloudinary.com/dci6nuwrm/image/upload/v1764618168/IMG_1575_secqmc.jpg" 
+              alt="Dheeraj Awasthi"
+              className="absolute inset-0 w-full h-full object-cover object-top scale-110"
+              style={{ objectPosition: '50% 20%' }}
+            />
+          </div>
+          <div className="p-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Dheeraj Awasthi</h3>
+            <p className="text-indigo-600 font-medium mb-4">Co-Founder, Operations & Strategy</p>
+            <p className="text-gray-700 leading-relaxed">
+              With a strong focus on innovation and execution, Dheeraj Awasthi leads product development and business strategy at Arttag. His commitment to quality, structure, and performance ensures that every Arttag product delivers premium value and lasting reliability.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
       </section>
 
       {/* CTA Section */}
