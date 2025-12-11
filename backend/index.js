@@ -20,11 +20,30 @@ const PORT = process.env.PORT || 8000 ;
 app.use(express.json()) ;
 app.use(express.urlencoded({extended : true})) ; 
 
-const corsOptions = {
-    origin: 'https://www.arttag.in',
-    credentials: true, 
-};
+// const corsOptions = {
+//     origin: 'https://ecommerce-two-teal-40.vercel.app',
+//     credentials: true, 
+// };
 
+const allowedOrigins = [
+    "https://www.arttag.in",
+    "https://ecommerce-two-teal-40.vercel.app",
+    "http://localhost:3000"
+  ];
+
+  const corsOptions = {
+    origin: function (origin, callback) {
+      // Allow server-to-server or tools (Postman, mobile apps)
+      if (!origin) return callback(null, true);
+  
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("CORS blocked: " + origin));
+      }
+    },
+    credentials: true
+  };
 
 app.use(cors(corsOptions)) ; 
 
