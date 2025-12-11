@@ -21,7 +21,7 @@ app.use(express.json()) ;
 app.use(express.urlencoded({extended : true})) ; 
 
 const corsOptions = {
-    origin: 'https://ecommerce-two-teal-40.vercel.app',
+    origin: 'https://www.arttag.in',
     credentials: true, 
 };
 
