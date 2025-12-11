@@ -50,8 +50,8 @@ const Footer: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             {/* DailyObjects */}
             <div className="flex flex-col items-center">
-              <div className="text-3xl font-bold mb-2">DO</div>
-              <div className="text-gray-600 mb-2">DailyObjects.com</div>
+              <div className="text-3xl font-bold mb-2">AT</div>
+              <div className="text-gray-600 mb-2">Arttag.in</div>
               <div className="flex items-center gap-1 mb-1">
                 <span className="text-lg font-semibold">4.6</span>
                 {[...Array(5)].map((_, i) => (

@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { Heart, X, AlertCircle } from 'lucide-react';
+import { Heart, X, AlertCircle, SlidersHorizontal } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -16,8 +16,24 @@ const SubcategoryProductsPage = () => {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { subcategoryId, categoryId, categoryName } = useParams();
 
-  const [userId, setUserId] = useState(null); // Changed to null instead of ""
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // Track authentication status
+  // Add CSS for hiding scrollbar
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  const [userId, setUserId] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]: any = useState(null);
@@ -26,6 +42,7 @@ const SubcategoryProductsPage = () => {
   const [wishlist, setWishlist] = useState(new Set());
   const [hoveredProduct, setHoveredProduct] = useState(null);
   const [showFilters, setShowFilters] = useState(true);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [availableTypes, setAvailableTypes] = useState([]);
   const [subcategoryDetails, setSubcategoryDetails]: any = useState(null);
 
@@ -202,6 +219,66 @@ const SubcategoryProductsPage = () => {
     ? products
     : products.filter((p: any) => p.type === selectedType);
 
+  const FilterContent = () => (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-bold text-sm mb-4 uppercase tracking-wide">SORT BY</h3>
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="radio"
+              name="sort"
+              checked={selectedSort === 'newest'}
+              onChange={() => setSelectedSort('newest')}
+              className="w-5 h-5 accent-teal-500 cursor-pointer"
+            />
+            <span className="text-sm group-hover:text-teal-600">Newest</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="radio"
+              name="sort"
+              checked={selectedSort === 'popularity'}
+              onChange={() => setSelectedSort('popularity')}
+              className="w-5 h-5 accent-teal-500 cursor-pointer"
+            />
+            <span className="text-sm group-hover:text-teal-600">Popularity</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="radio"
+              name="sort"
+              checked={selectedSort === 'discount'}
+              onChange={() => setSelectedSort('discount')}
+              className="w-5 h-5 accent-teal-500 cursor-pointer"
+            />
+            <span className="text-sm group-hover:text-teal-600">Discount</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="radio"
+              name="sort"
+              checked={selectedSort === 'lowToHigh'}
+              onChange={() => setSelectedSort('lowToHigh')}
+              className="w-5 h-5 accent-teal-500 cursor-pointer"
+            />
+            <span className="text-sm group-hover:text-teal-600">Price: Low To High</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <input
+              type="radio"
+              name="sort"
+              checked={selectedSort === 'highToLow'}
+              onChange={() => setSelectedSort('highToLow')}
+              className="w-5 h-5 accent-teal-500 cursor-pointer"
+            />
+            <span className="text-sm group-hover:text-teal-600">Price: High To Low</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className="min-h-screen bg-gray-50">
@@ -215,9 +292,10 @@ const SubcategoryProductsPage = () => {
           </div>
         </div>
 
-        {/* Type Filters - Centered */}
+        {/* Type Filters - Desktop: Centered, Mobile: Slider */}
         <div className="bg-white border-b py-6">
-          <div className="max-w-4xl mx-auto px-4">
+          {/* Desktop View - Centered */}
+          <div className="hidden md:block max-w-4xl mx-auto px-4">
             <div className="flex justify-center items-center gap-6 flex-wrap">
               <button
                 onClick={() => setSelectedType('All')}
@@ -240,7 +318,7 @@ const SubcategoryProductsPage = () => {
                   className={`flex flex-col items-center gap-2 transition-all ${selectedType === typeObj.type ? 'opacity-100' : 'opacity-50 hover:opacity-75'
                     }`}
                 >
-                  <div className={`w-18 h-18 rounded-full flex items-center justify-center overflow-hidden transition-all ${selectedType === typeObj.type
+                  <div className={`w-20 h-20 rounded-full flex items-center justify-center overflow-hidden transition-all ${selectedType === typeObj.type
                       ? 'bg-teal-500 shadow-lg scale-110 ring-4 ring-teal-200'
                       : 'bg-gray-100 hover:bg-gray-300'
                     }`}>
@@ -263,6 +341,54 @@ const SubcategoryProductsPage = () => {
               ))}
             </div>
           </div>
+
+          {/* Mobile View - Horizontal Slider */}
+          <div className="md:hidden px-4">
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+              <button
+                onClick={() => setSelectedType('All')}
+                className={`flex flex-col items-center gap-2 flex-shrink-0 transition-all snap-center ${selectedType === 'All' ? 'opacity-100' : 'opacity-50'
+                  }`}
+              >
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xs font-bold transition-all ${selectedType === 'All'
+                    ? 'bg-teal-500 text-white shadow-lg scale-105'
+                    : 'bg-gray-200'
+                  }`}>
+                  ALL
+                </div>
+                <span className="text-xs font-medium text-black whitespace-nowrap">All</span>
+              </button>
+
+              {availableTypes.map((typeObj: any) => (
+                <button
+                  key={typeObj.type}
+                  onClick={() => setSelectedType(typeObj.type)}
+                  className={`flex flex-col items-center gap-2 flex-shrink-0 transition-all snap-center ${selectedType === typeObj.type ? 'opacity-100' : 'opacity-50'
+                    }`}
+                >
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center overflow-hidden transition-all ${selectedType === typeObj.type
+                      ? 'bg-teal-500 shadow-lg scale-105 ring-4 ring-teal-200'
+                      : 'bg-gray-100'
+                    }`}>
+                    {typeObj.image ? (
+                      <img
+                        src={typeObj.image}
+                        alt={typeObj.type}
+                        className="w-12 h-12 object-cover"
+                        onError={(e: any) => {
+                          e.currentTarget.style.display = 'none';
+                          e.currentTarget.parentElement.innerHTML = `<span class="text-xl">${typeIcons[typeObj.type] || '📦'}</span>`;
+                        }}
+                      />
+                    ) : (
+                      <span className="text-xl">{typeIcons[typeObj.type] || '📦'}</span>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium text-black whitespace-nowrap max-w-[80px] truncate">{typeObj.type}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -274,7 +400,7 @@ const SubcategoryProductsPage = () => {
           )}
 
           <div className="flex gap-6">
-            {/* Sidebar Filters */}
+            {/* Desktop Sidebar Filters */}
             {showFilters && (
               <div className="w-64 flex-shrink-0 hidden lg:block">
                 <div className="bg-white rounded-lg p-6 shadow-sm sticky top-4">
@@ -285,78 +411,31 @@ const SubcategoryProductsPage = () => {
                     <span className="font-medium text-sm">HIDE FILTERS</span>
                     <X className="h-4 w-4" />
                   </button>
-
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="font-bold text-sm mb-4 uppercase tracking-wide">SORT BY</h3>
-                      <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name="sort"
-                            checked={selectedSort === 'newest'}
-                            onChange={() => setSelectedSort('newest')}
-                            className="w-5 h-5 accent-teal-500 cursor-pointer"
-                          />
-                          <span className="text-sm group-hover:text-teal-600">Newest</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name="sort"
-                            checked={selectedSort === 'popularity'}
-                            onChange={() => setSelectedSort('popularity')}
-                            className="w-5 h-5 accent-teal-500 cursor-pointer"
-                          />
-                          <span className="text-sm group-hover:text-teal-600">Popularity</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name="sort"
-                            checked={selectedSort === 'discount'}
-                            onChange={() => setSelectedSort('discount')}
-                            className="w-5 h-5 accent-teal-500 cursor-pointer"
-                          />
-                          <span className="text-sm group-hover:text-teal-600">Discount</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name="sort"
-                            checked={selectedSort === 'lowToHigh'}
-                            onChange={() => setSelectedSort('lowToHigh')}
-                            className="w-5 h-5 accent-teal-500 cursor-pointer"
-                          />
-                          <span className="text-sm group-hover:text-teal-600">Price: Low To High</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                          <input
-                            type="radio"
-                            name="sort"
-                            checked={selectedSort === 'highToLow'}
-                            onChange={() => setSelectedSort('highToLow')}
-                            className="w-5 h-5 accent-teal-500 cursor-pointer"
-                          />
-                          <span className="text-sm group-hover:text-teal-600">Price: High To Low</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
+                  <FilterContent />
                 </div>
               </div>
             )}
 
             {/* Products Grid */}
             <div className="flex-1">
+              {/* Desktop Show Filters Button */}
               {!showFilters && (
                 <button
                   onClick={() => setShowFilters(true)}
-                  className="mb-6 text-white bg-teal-500 hover:bg-teal-600 px-6 py-2.5 rounded-full transition-colors font-medium text-sm"
+                  className="mb-6 text-white bg-teal-500 hover:bg-teal-600 px-6 py-2.5 rounded-full transition-colors font-medium text-sm hidden lg:block"
                 >
                   SHOW FILTERS
                 </button>
               )}
+
+              {/* Mobile Filter Button */}
+              <button
+                onClick={() => setShowMobileFilters(true)}
+                className="mb-6 flex items-center gap-2 text-white bg-teal-500 hover:bg-teal-600 px-6 py-2.5 rounded-full transition-colors font-medium text-sm lg:hidden w-full justify-center"
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                FILTERS & SORT
+              </button>
 
               <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {loading ? (
@@ -456,6 +535,43 @@ const SubcategoryProductsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Filter Drawer */}
+      {showMobileFilters && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowMobileFilters(false)}
+          />
+          
+          {/* Drawer */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl max-h-[80vh] overflow-y-auto animate-slide-up">
+            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+              <h2 className="text-lg font-bold uppercase">Filters & Sort</h2>
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <FilterContent />
+            </div>
+
+            <div className="sticky bottom-0 bg-white border-t p-4">
+              <button
+                onClick={() => setShowMobileFilters(false)}
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 rounded-full transition-colors"
+              >
+                APPLY FILTERS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="border-t border-gray-300 my-0"></div>
       <FooterPart />

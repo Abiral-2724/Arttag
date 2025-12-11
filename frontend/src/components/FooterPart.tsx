@@ -99,10 +99,10 @@ const FooterPart = (props: Props) => {
             <div className="flex flex-col items-center">
               <h4 className="font-semibold text-sm mb-4 text-gray-900">Follow Us On</h4>
               <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
+                <a href="https://www.instagram.com/arttag.india?igsh=aHh1c2Z4eXFhZnB3&utm_source=qr" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
                   <Instagram className="w-5 h-5 text-gray-700 group-hover:text-white" />
                 </a>
-                <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
+                {/* <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
                   <Facebook className="w-5 h-5 text-gray-700 group-hover:text-white" />
                 </a>
                 <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
@@ -110,8 +110,8 @@ const FooterPart = (props: Props) => {
                 </a>
                 <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
                   <Twitter className="w-5 h-5 text-gray-700 group-hover:text-white" />
-                </a>
-                <a href="#" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
+                </a> */}
+                <a href="https://www.linkedin.com/company/arttagindia/" className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-300 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all duration-300 group">
                   <Linkedin className="w-5 h-5 text-gray-700 group-hover:text-white" />
                 </a>
               </div>
@@ -137,7 +137,7 @@ const FooterPart = (props: Props) => {
       <div className="bg-gray-900 text-gray-300 py-6 px-4">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-sm">
-            © 2012 - 2025 Firki Wholesale Pvt. Ltd.
+            © Copyright 2025 Arttag Pvt. Ltd.
           </div>
           <div className="flex gap-6 text-sm">
             <a href="#" className="hover:text-white transition-colors">Terms of use</a>

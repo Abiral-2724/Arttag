@@ -30,6 +30,8 @@ const ProductDetailPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
   const {productId} = useParams();
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ; 
@@ -120,6 +122,33 @@ const ProductDetailPage = () => {
   const handleColorChange = (color) => {
     setSelectedColor(color);
     setCurrentImageIndex(0);
+  };
+
+  // Swipe handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e) => {
+    setTouchEnd(0); // Reset touchEnd
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      nextImage();
+    }
+    if (isRightSwipe) {
+      prevImage();
+    }
   };
 
   const handleAddToCart = async () => {
@@ -334,12 +363,18 @@ const ProductDetailPage = () => {
         <div className="grid md:grid-cols-2 gap-8 bg-white shadow-sm">
           {/* Left Side - Image Slider */}
           <div className="space-y-4">
-            <div className="relative overflow-hidden aspect-square">
+            <div 
+              className="relative overflow-hidden aspect-square touch-pan-y"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+            >
               {images.length > 0 && (
                 <img
                   src={images[currentImageIndex]}
                   alt={selectedColor?.name}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain select-none"
+                  draggable="false"
                 />
               )}
               
@@ -462,7 +497,7 @@ const ProductDetailPage = () => {
             </button>
 
             {/* Features */}
-            <div className="grid grid-cols-4 gap-4 py-4 border-y border-gray-200">
+            {/* <div className="grid grid-cols-4 gap-4 py-4 border-y border-gray-200">
               <div className="text-center">
                 <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                   <Package className="w-8 h-8" />
@@ -487,7 +522,7 @@ const ProductDetailPage = () => {
                 </div>
                 <p className="text-xs">Adjustable View</p>
               </div>
-            </div>
+            </div> */}
 
             {/* Product Description */}
             <div className="bg-white rounded-lg pl-5 pr-7">
