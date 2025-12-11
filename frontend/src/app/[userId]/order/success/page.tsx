@@ -71,7 +71,7 @@ export default function OrderSuccessPage() {
 
         {/* Footer Note */}
         <p className="text-center text-gray-600 mt-8 text-sm">
-          Need help? Contact our support team at support@yourstore.com
+          Need help? Contact our support team at support@arttag.in
         </p>
       </div>
     </div>
