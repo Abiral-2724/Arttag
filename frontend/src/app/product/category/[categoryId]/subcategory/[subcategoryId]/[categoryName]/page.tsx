@@ -13,27 +13,27 @@ import FooterPart from '@/components/FooterPart';
 
 const SubcategoryProductsPage = () => {
   const router = useRouter();
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ;
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { subcategoryId, categoryId, categoryName } = useParams();
-  
+
   const [userId, setUserId] = useState(null); // Changed to null instead of ""
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Track authentication status
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] : any = useState(null);
+  const [error, setError]: any = useState(null);
   const [selectedType, setSelectedType] = useState('All');
   const [selectedSort, setSelectedSort] = useState('popularity');
   const [wishlist, setWishlist] = useState(new Set());
   const [hoveredProduct, setHoveredProduct] = useState(null);
   const [showFilters, setShowFilters] = useState(true);
   const [availableTypes, setAvailableTypes] = useState([]);
-  const [subcategoryDetails, setSubcategoryDetails] : any = useState(null);
+  const [subcategoryDetails, setSubcategoryDetails]: any = useState(null);
 
   // Authentication Check (Non-blocking)
   useEffect(() => {
     const token = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagtoken") : null;
-    const storedUserId : any = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagUserId") : null;
-    
+    const storedUserId: any = typeof window !== 'undefined' ? window.localStorage?.getItem("arttagUserId") : null;
+
     if (storedUserId && token) {
       setUserId(storedUserId);
       setIsAuthenticated(true);
@@ -47,7 +47,7 @@ const SubcategoryProductsPage = () => {
   useEffect(() => {
     fetchTypesAndDetails();
     fetchProducts();
-    
+
     // Only fetch wishlist if user is authenticated
     if (isAuthenticated && userId) {
       fetchWishlist();
@@ -64,7 +64,7 @@ const SubcategoryProductsPage = () => {
       const response = await axios.get(
         `${API_BASE_URL}/product/get/product/subcategory/all/type/${subcategoryId}`
       );
-      
+
       if (response.data.success) {
         setAvailableTypes(response.data.types || []);
         setSubcategoryDetails(response.data.subcategorydetail);
@@ -90,20 +90,20 @@ const SubcategoryProductsPage = () => {
       const response = await axios.get(
         `${API_BASE_URL}/product/get/product/bytype/${subcategoryId}?${queryString}`
       );
-      
+
       if (response.data.success) {
         setProducts(response.data.products);
       } else {
         setProducts([]);
       }
-    } catch (error : any) {
+    } catch (error: any) {
       if (error.response?.status === 404) {
         setProducts([]);
       } else {
         console.error('Error fetching products:', error);
         setError(
           error.response?.data?.message ||
-            'Failed to load products. Please try again.'
+          'Failed to load products. Please try again.'
         );
       }
     } finally {
@@ -113,7 +113,7 @@ const SubcategoryProductsPage = () => {
 
   const fetchWishlist = async () => {
     if (!isAuthenticated || !userId) return;
-    
+
     try {
       const response = await axios.get(`${API_BASE_URL}/wishlist/${userId}/get/all/items/wishlist`);
       if (response.data.success) {
@@ -140,7 +140,7 @@ const SubcategoryProductsPage = () => {
         await axios.delete(`${API_BASE_URL}/wishlist/delete/item/user/wishlist`, {
           data: { userId, productId }
         });
-        
+
         setWishlist(prev => {
           const newSet = new Set(prev);
           newSet.delete(productId);
@@ -198,9 +198,9 @@ const SubcategoryProductsPage = () => {
     'Digital Art': '💻',
   };
 
-  const filteredProducts = selectedType === 'All' 
-    ? products 
-    : products.filter((p:any) => p.type === selectedType);
+  const filteredProducts = selectedType === 'All'
+    ? products
+    : products.filter((p: any) => p.type === selectedType);
 
   return (
     <div>
@@ -221,39 +221,35 @@ const SubcategoryProductsPage = () => {
             <div className="flex justify-center items-center gap-6 flex-wrap">
               <button
                 onClick={() => setSelectedType('All')}
-                className={`flex flex-col items-center gap-2 transition-all ${
-                  selectedType === 'All' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
-                }`}
+                className={`flex flex-col items-center gap-2 transition-all ${selectedType === 'All' ? 'opacity-100' : 'opacity-50 hover:opacity-75'
+                  }`}
               >
-                <div className={`w-20 h-20 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                  selectedType === 'All' 
-                    ? 'bg-teal-500 text-white shadow-lg scale-110' 
+                <div className={`w-20 h-20 rounded-full flex items-center justify-center text-xs font-bold transition-all ${selectedType === 'All'
+                    ? 'bg-teal-500 text-white shadow-lg scale-110'
                     : 'bg-gray-200 hover:bg-gray-300'
-                }`}>
+                  }`}>
                   ALL
                 </div>
                 <span className="text-sm font-medium text-black">All</span>
               </button>
 
-              {availableTypes.map((typeObj : any) => (
+              {availableTypes.map((typeObj: any) => (
                 <button
                   key={typeObj.type}
                   onClick={() => setSelectedType(typeObj.type)}
-                  className={`flex flex-col items-center gap-2 transition-all ${
-                    selectedType === typeObj.type ? 'opacity-100' : 'opacity-50 hover:opacity-75'
-                  }`}
+                  className={`flex flex-col items-center gap-2 transition-all ${selectedType === typeObj.type ? 'opacity-100' : 'opacity-50 hover:opacity-75'
+                    }`}
                 >
-                  <div className={`w-18 h-18 rounded-full flex items-center justify-center overflow-hidden transition-all ${
-                    selectedType === typeObj.type 
-                      ? 'bg-teal-500 shadow-lg scale-110 ring-4 ring-teal-200' 
+                  <div className={`w-18 h-18 rounded-full flex items-center justify-center overflow-hidden transition-all ${selectedType === typeObj.type
+                      ? 'bg-teal-500 shadow-lg scale-110 ring-4 ring-teal-200'
                       : 'bg-gray-100 hover:bg-gray-300'
-                  }`}>
+                    }`}>
                     {typeObj.image ? (
-                      <img 
-                        src={typeObj.image} 
+                      <img
+                        src={typeObj.image}
                         alt={typeObj.type}
                         className="w-14 h-14 object-cover"
-                        onError={(e : any) => {
+                        onError={(e: any) => {
                           e.currentTarget.style.display = 'none';
                           e.currentTarget.parentElement.innerHTML = `<span class="text-2xl">${typeIcons[typeObj.type] || '📦'}</span>`;
                         }}
@@ -366,7 +362,7 @@ const SubcategoryProductsPage = () => {
                 {loading ? (
                   renderSkeletons()
                 ) : (
-                  filteredProducts.map((product : any) => (
+                  filteredProducts.map((product: any) => (
                     <div key={product.id}>
                       <Link href={`/product/category/${categoryId}/subcategory/${subcategoryId}/${categoryName}/${product.id}`}>
                         <Card
@@ -381,11 +377,10 @@ const SubcategoryProductsPage = () => {
                               className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-all hover:scale-110"
                             >
                               <Heart
-                                className={`h-5 w-5 transition-all ${
-                                  wishlist.has(product.id)
+                                className={`h-5 w-5 transition-all ${wishlist.has(product.id)
                                     ? "fill-red-500 text-red-500"
                                     : "text-gray-600 hover:text-red-500"
-                                }`}
+                                  }`}
                               />
                             </button>
                           )}

@@ -7,14 +7,14 @@ function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-      if(localStorage.getItem("arttagtoken") && localStorage.getItem("arttagUserId")){
-        router.push('/') ;
-      }
-  } ,[])
+    if (localStorage.getItem("arttagtoken") && localStorage.getItem("arttagUserId")) {
+      router.push('/');
+    }
+  }, [])
 
   return (
     <div className="">
-      
+
       <OtpLogin />
     </div>
   );

@@ -36,6 +36,16 @@ enum PaymentStatus {
   PARTIALLY_REFUNDED
 }
 
+enum PaymentType {
+  CASEONDELIVERY 
+  PHONEPAY
+  UPI
+  DEBITCARD
+  CREDITCARD
+  PAYTM
+  NETBANKING
+}
+
 model User {
   id          String   @id @default(uuid())
   name        String?
@@ -70,15 +80,15 @@ model Address {
 }
 
 model Category {
-  id          String     @id @default(uuid())
-  name        String     @unique
-  imageUrl    String?
-  parentId    String?
-  
-  parent      Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
-  children    Category[] @relation("CategoryHierarchy")
+  id       String  @id @default(uuid())
+  name     String  @unique
+  imageUrl String?
+  parentId String?
+
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
   // products    Product[]
-  createdAt   DateTime   @default(now())
+  createdAt DateTime   @default(now())
 }
 
 model Product {
@@ -86,8 +96,8 @@ model Product {
   name                       String
   originalPrice              Int
   discountPrice              Int
-  type String?
- tags String[] @default([])
+  type                       String?
+  tags                       String[] @default([])
   description                String
   shortDescription           String?
   material                   String
@@ -103,40 +113,39 @@ model Product {
   caseOnDeliveryAvailability Boolean
   returnDetails              String
   createdAt                  DateTime @default(now())
-  primaryImage1 String
-  primaryImage2 String
-  categoryId String
+  primaryImage1              String
+  primaryImage2              String
+  categoryId                 String
   // category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
+
   wishlists Wishlist[]
   reviews   Review[]
   images    ProductImages[]
   cart      CartItems[]
   orders    OrderItem[]
-  colors ProductColor[]
+  colors    ProductColor[]
 }
 
 model ProductColor {
-  id         String   @id @default(uuid())
-  name       String   
-  hex        String?  
-  productId  String
+  id          String  @id @default(uuid())
+  name        String
+  hex         String?
+  productId   String
   colorImage1 String
   colorImage2 String
   colorImage3 String?
   colorImage4 String?
   colorImage5 String?
-  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model ProductImages {
-  id          String    @id @default(uuid())
+  id          String  @id @default(uuid())
   url         String
   altText     String?
   description String?
   productId   String
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model Wishlist {
@@ -168,11 +177,13 @@ model Orders {
   userId         String
   status         OrderStatus   @default(PENDING)
   paymentStatus  PaymentStatus @default(PENDING)
+  paymentType   PaymentType @default(CASEONDELIVERY)
   subtotal       Int
   discountAmount Int           @default(0)
   shippingCharge Int           @default(0)
   taxAmount      Int           @default(0)
   totalAmount    Int
+  addressId      String        @default("")
   createdAt      DateTime      @default(now())
 
   // Relations
@@ -195,36 +206,35 @@ model OrderItem {
 }
 
 model CartItems {
-  id        String   @id @default(uuid())
-  ownerId   String
-  productId String
-  quantity  Int      @default(1)
-  couponCode String?
-  couponDiscountPercentage Int @default(0)
-  addAsGift Boolean @default(false)
-  chargeForGift Int @default(0)
-  giftRecipentname String @default("None")
-  giftSendername String @default("None")
-  giftMessageFromSender String @default("None")
-  createdAt DateTime @default(now())
+  id                       String   @id @default(uuid())
+  ownerId                  String
+  productId                String
+  quantity                 Int      @default(1)
+  couponCode               String?
+  couponDiscountPercentage Int      @default(0)
+  addAsGift                Boolean  @default(false)
+  chargeForGift            Int      @default(0)
+  giftRecipentname         String   @default("None")
+  giftSendername           String   @default("None")
+  giftMessageFromSender    String   @default("None")
+  createdAt                DateTime @default(now())
 
   owner   User    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
-
 model CouponsCode {
-  id             String    @id @default(uuid())
-  code           String   @unique
-  discountPercentage  Int
-  minOrderAmount Int
-  validFrom      DateTime?
-  validUntil     DateTime?
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
+  id                 String    @id @default(uuid())
+  code               String    @unique
+  discountPercentage Int
+  minOrderAmount     Int
+  validFrom          DateTime?
+  validUntil         DateTime?
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
 }
 
 model Pincode {
-id             String    @id @default(uuid())
-pincode Int
+  id      String @id @default(uuid())
+  pincode Int
 }

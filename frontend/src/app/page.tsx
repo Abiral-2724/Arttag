@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ShoppingCart, User, Search, ChevronDown, ArrowRight } from 'lucide-react';
 import {
   DropdownMenu,
@@ -45,7 +45,7 @@ const carouselSlides = [
     link: 'product/category/6578853f-a315-4c27-acd2-d1ca33f55135'
   },
   {
-    
+
     title: 'LOOP POWER BANKS',
     subtitle: 'Qi2-Certified, Next-Gen Fast Wireless Charging.',
     image: 'https://images.dailyobjects.com/marche/assets/images/other-2/desktop_herobanner_loop.jpg?tr=cm-pad_crop,v-3,w-360,dpr-4',
@@ -53,20 +53,60 @@ const carouselSlides = [
   },
 ];
 
+interface Subcategory {
+  id: string;
+  name: string;
+  imageUrl: string;
+  parentId: string;
+  createdAt: string;
+}
+
+interface SubcategoriesResponse {
+  success: boolean;
+  message: string;
+  subcategories: Subcategory[];
+}
+
+
 export default function DailyObjectsReplica() {
   const [userId, setUserId] = useState("");
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [api, setApi] : any = useState(null);
+  const [api, setApi]: any = useState(null);
   const router = useRouter();
-
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const categorySliderRef = useRef<HTMLDivElement>(null);
+  const topCategorySliderRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+  useEffect(() => {
+    fetchSubcategories();
+  }, []);
+
+  const fetchSubcategories = async () => {
+    setIsLoadingCategories(true);
+    try {
+      const response = await fetch(`${API_BASE}/category/get/all/subcategory`);
+      const data: SubcategoriesResponse = await response.json();
+      if (data.success) {
+        setSubcategories(data.subcategories);
+      }
+    } catch (error) {
+      console.error('Failed to fetch subcategories:', error);
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
+
 
   useEffect(() => {
     // if (!localStorage.getItem("arttagUserId") || !localStorage.getItem("arttagtoken")) {
     //   router.push('/login');
     //   return;
     // }
-    
+
     const id = localStorage.getItem("arttagUserId");
     if (id) {
       setUserId(id);
@@ -88,10 +128,51 @@ export default function DailyObjectsReplica() {
     router.push(link);
   };
 
+  const scrollSlider = (direction: 'left' | 'right', sliderRef: React.RefObject<HTMLDivElement>) => {
+    if (sliderRef.current) {
+      const scrollAmount = 300;
+      const newScrollLeft = direction === 'left'
+        ? sliderRef.current.scrollLeft - scrollAmount
+        : sliderRef.current.scrollLeft + scrollAmount;
+
+      sliderRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleCategoryClick = (subcategory: Subcategory) => {
+    const categoryId = subcategory.parentId;
+    const subcategoryId = subcategory.id;
+    const subcategoryName = subcategory.name.toLowerCase().replace(/\s+/g, '-');
+
+    window.location.href = `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}`;
+  };
+
+  const shopByCategories = [
+    {
+      title: 'TECH ACCESSORIES',
+      image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3',
+      link: 'product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1'
+    },
+    {
+      title: 'BAGS & WALLETS',
+      image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_bags_wallets-2.jpeg?tr=cm-pad_resize,v-3',
+      link: 'product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0'
+    },
+    {
+      title: 'WORK ESSENTIALS',
+      image: 'https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_work_essentials-2.jpeg?tr=cm-pad_resize,v-3',
+      link: 'product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17'
+    }
+  ];
+
+
   return (
     <div className="bg-white">
       {/* Header */}
-      <Navbar page={"Home"}/>
+      <Navbar page={"Home"} />
 
       {/* Hero Carousel */}
       <Carousel className="w-full" opts={{ loop: true }} setApi={setApi}>
@@ -100,15 +181,15 @@ export default function DailyObjectsReplica() {
             <CarouselItem key={index}>
               <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[calc(100vh-80px)]">
                 {/* Background Image */}
-                <img 
-                  src={slide.image} 
+                <img
+                  src={slide.image}
                   alt={slide.title}
                   className="absolute inset-0 w-full h-full object-cover object-center"
                 />
-                
+
                 {/* Overlay for better text readability */}
                 <div className="absolute inset-0 bg-black/10"></div>
-                
+
                 <div className="relative max-w-[1300px] mx-auto h-full px-4 sm:px-6 md:px-8 lg:px-12 flex items-end pb-16 sm:pb-20 md:pb-28 lg:pb-35">
                   <div className="z-10">
                     <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[47px] font-black text-white mb-1 sm:mb-2 tracking-tight leading-tight uppercase drop-shadow-lg">
@@ -117,7 +198,7 @@ export default function DailyObjectsReplica() {
                     <p className="text-sm sm:text-base md:text-lg lg:text-[21px] text-white mb-4 sm:mb-5 md:mb-7 font-light drop-shadow-md">
                       {slide.subtitle}
                     </p>
-                    <button 
+                    <button
                       onClick={() => handleShopNow(slide.link)}
                       className="bg-white text-black px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 text-xs sm:text-sm md:text-[14px] font-black tracking-wider rounded-[3px] hover:bg-black hover:text-white transition-colors shadow-lg"
                     >
@@ -131,9 +212,8 @@ export default function DailyObjectsReplica() {
                   {carouselSlides.map((_, idx) => (
                     <button
                       key={idx}
-                      className={`h-1.5 sm:h-2 rounded-full transition-all ${
-                        idx === index ? 'bg-white w-6 sm:w-8' : 'bg-white/50 w-1.5 sm:w-2'
-                      }`}
+                      className={`h-1.5 sm:h-2 rounded-full transition-all ${idx === index ? 'bg-white w-6 sm:w-8' : 'bg-white/50 w-1.5 sm:w-2'
+                        }`}
                       onClick={() => setCurrentSlide(idx)}
                     />
                   ))}
@@ -142,11 +222,11 @@ export default function DailyObjectsReplica() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        
+
         <CarouselPrevious className="hidden md:flex absolute left-2 sm:left-4 md:left-6 lg:left-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-blue-300 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-0 shadow-lg">
           <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
         </CarouselPrevious>
-        
+
         <CarouselNext className="hidden md:flex absolute right-2 sm:right-4 md:right-6 lg:right-8 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-blue-300 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-0 shadow-lg">
           <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
         </CarouselNext>
@@ -157,92 +237,162 @@ export default function DailyObjectsReplica() {
         <h2 className="text-xl sm:text-2xl md:text-[30px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-4 sm:mb-5 tracking-tight uppercase">
           SHOP BY CATEGORY
         </h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-          {/* Tech Accessories Card */}
-          <Link href='product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1'>
-          <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-            <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
-              <img 
-                src="https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_tech-2.jpeg?tr=cm-pad_resize,v-3"
-                alt="Tech Accessories"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-              
-              <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-16 sm:right-20 md:right-24 flex items-center justify-between">
-                <h3 className="text-white text-lg sm:text-xl md:text-[25px] font-black uppercase tracking-tight">
-                  TECH ACCESSORIES
-                </h3>
-                <button className="absolute -right-12 sm:-right-14 md:-right-16 rounded-full border-1 border-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
-                  <ArrowRight className='text-white w-4 h-4 sm:w-5 sm:h-5'/>
-                </button>
-              </div>
-            </div>
-          </div>
-          </Link>
-        
 
-          {/* Bags & Wallets Card */}
-          <Link href={'product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0'}>
-          <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-            <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
-              <img 
-                src="https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_bags_wallets-2.jpeg?tr=cm-pad_resize,v-3"
-                alt="Bags & Wallets"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-              
-              <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-16 sm:right-20 md:right-24 flex items-center justify-between">
-                <h3 className="text-white text-lg sm:text-xl md:text-[25px] font-black uppercase tracking-tight">
-                  BAGS & WALLETS
-                </h3>
-                <button className="absolute -right-12 sm:-right-14 md:-right-16 rounded-full border-1 border-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
-                  <ArrowRight className='text-white w-4 h-4 sm:w-5 sm:h-5'/>
-                </button>
-              </div>
-            </div>
-          </div>
-          </Link>
-       
+        {/* Mobile Horizontal Slider */}
+        <div className="sm:hidden relative group">
+          <button
+            onClick={() => scrollSlider('left', categorySliderRef)}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-lg rounded-full p-2 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
+          </button>
 
-          {/* Work Essentials Card */}
-          <Link href={'product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17'}>
-          <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-            <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
-              <img 
-                src="https://images.dailyobjects.com/marche/assets/images/homepage/desktop/shop_by_category_work_essentials-2.jpeg?tr=cm-pad_resize,v-3"
-                alt="Work Essentials"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-              
-              <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-16 sm:right-20 md:right-24 flex items-center justify-between">
-                <h3 className="text-white text-lg sm:text-xl md:text-[25px] font-black uppercase tracking-tight">
-                  WORK ESSENTIALS
-                </h3>
-                <button className="absolute -right-12 sm:-right-14 md:-right-16 rounded-full border-1 border-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
-                  <ArrowRight className='text-white w-4 h-4 sm:w-5 sm:h-5'/>
-                </button>
-              </div>
-            </div>
+          <div
+            ref={categorySliderRef}
+            className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
+          >
+            {shopByCategories.map((category, index) => (
+              <Link key={index} href={category.link} className="flex-shrink-0 w-[85vw] snap-center">
+                <div className="group/item relative rounded-xl cursor-pointer overflow-hidden">
+                  <div className="aspect-[4/6] relative overflow-hidden">
+                    <img
+                      src={category.image}
+                      alt={category.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover/item:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+
+                    <div className="absolute bottom-6 left-6 right-20 flex items-center justify-between">
+                      <h3 className="text-white text-lg font-black uppercase tracking-tight">
+                        {category.title}
+                      </h3>
+                      <button className="absolute -right-14 rounded-full border-1 border-white w-10 h-10 flex items-center justify-center transition-transform group-hover/item:scale-110 flex-shrink-0">
+                        <ArrowRight className='text-white w-4 h-4' />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
-          </Link>
-         
+
+          <button
+            onClick={() => scrollSlider('right', categorySliderRef)}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 shadow-lg rounded-full p-2 hover:bg-gray-100 transition-all opacity-0 group-hover:opacity-100"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-700" />
+          </button>
+        </div>
+
+        {/* Desktop Grid */}
+        <div className="hidden sm:grid sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+          {shopByCategories.map((category, index) => (
+            <Link key={index} href={category.link}>
+              <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
+                <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+
+                  <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 right-16 sm:right-20 md:right-24 flex items-center justify-between">
+                    <h3 className="text-white text-lg sm:text-xl md:text-[25px] font-black uppercase tracking-tight">
+                      {category.title}
+                    </h3>
+                    <button className="absolute -right-12 sm:-right-14 md:-right-16 rounded-full border-1 border-white w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-transform group-hover:scale-110 flex-shrink-0">
+                      <ArrowRight className='text-white w-4 h-4 sm:w-5 sm:h-5' />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
       {/* Promotional Banner */}
       <section className="max-w-[1440px] mx-auto px-0 pb-3 sm:pb-5">
         <div className="relative overflow-hidden">
-          <img 
+          <img
             src="https://images.dailyobjects.com/marche/assets/images/other-2/brighten-Desk-Landing-Page-Banner.jpg?tr=cm-pad_crop,v-3"
             alt="Brighten Your Everyday"
             className="w-full h-auto object-cover"
           />
         </div>
       </section>
+
+      {/* Top Categories Section - Enhanced */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
+        <h2 className="text-2xl sm:text-2xl md:text-[30px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-6 sm:mb-8 tracking-tight uppercase">
+          TOP CATEGORIES
+        </h2>
+
+        {isLoadingCategories ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-black mx-auto"></div>
+              <p className="mt-6 text-gray-600 text-lg">Loading categories...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="relative group">
+            {/* Left Arrow */}
+            <button
+              onClick={() => scrollSlider('left', topCategorySliderRef)}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 -translate-x-2 hover:scale-110 border border-gray-200"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+
+            {/* Slider Container */}
+            <div
+              ref={topCategorySliderRef}
+              className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {subcategories.map((category) => (
+                <div
+                  key={category.id}
+                  onClick={() => handleCategoryClick(category)}
+                  className="flex-shrink-0 w-28 sm:w-32 md:w-36 flex flex-col items-center cursor-pointer group/item"
+                >
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full overflow-hidden mb-3 sm:mb-4 group-hover/item:shadow-2xl transition-all duration-300 ring-2 ring-transparent group-hover/item:ring-black group-hover/item:ring-offset-4">
+                    <img
+                      src={category.imageUrl}
+                      alt={category.name}
+                      className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                  <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 text-center leading-tight px-2 group-hover/item:text-black transition-colors">
+                    {category.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              onClick={() => scrollSlider('right', topCategorySliderRef)}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 translate-x-2 hover:scale-110 border border-gray-200"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </div>
+        )}
+      </div>
 
       <section>
         <Footer />

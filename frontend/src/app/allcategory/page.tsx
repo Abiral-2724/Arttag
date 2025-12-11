@@ -21,9 +21,9 @@ const AllCategoriesPage = () => {
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  const [categories, setCategories] : any = useState([]);
+  const [categories, setCategories]: any = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] : any = useState(null);
+  const [error, setError]: any = useState(null);
   // const [userId, setUserId] = useState("");
 
   // useEffect(() => {
@@ -36,9 +36,9 @@ const AllCategoriesPage = () => {
   // }, [router]);
 
   useEffect(() => {
-    
-      fetchCategories();
-    
+
+    fetchCategories();
+
   }, []);
 
   const fetchCategories = async () => {
@@ -71,17 +71,17 @@ const AllCategoriesPage = () => {
   // Loading UI
   if (loading) {
     return (
-        <div>
+      <div>
         <Navbar></Navbar>
         <div className="min-h-screen bg-white flex items-center justify-center">
-    
-   <div className="flex flex-col items-center">
-    <Spinner className='text-blue-700 text-5xl'></Spinner>
-    <p className="text-gray-600 text-sm">Loading categories</p>
-    </div>
-  </div>
-    </div>
-  
+
+          <div className="flex flex-col items-center">
+            <Spinner className='text-blue-700 text-5xl'></Spinner>
+            <p className="text-gray-600 text-sm">Loading categories</p>
+          </div>
+        </div>
+      </div>
+
     );
   }
 
@@ -108,95 +108,95 @@ const AllCategoriesPage = () => {
   // Main Content
   return (
     <div>
-         <Navbar></Navbar>
-         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-       
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            All Categories
-          </h1>
-          <p className="text-slate-600 text-lg">
-            Explore our wide range of product categories
-          </p>
-        </div>
+      <Navbar></Navbar>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
 
-        {categories.length === 0 ? (
-          <div className="text-center py-12">
-            <Package className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-            <p className="text-slate-600 text-lg">No categories available</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((category) => (
-              <Card
-                key={category.id}
-                className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-slate-200 hover:border-slate-300 bg-white"
-                onClick={() => handleCategoryClick(category.id)}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-xl font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
-                        {category.name}
-                      </CardTitle>
-                      {category.description && (
-                        <CardDescription className="mt-2 text-slate-600">
-                          {category.description}
-                        </CardDescription>
-                      )}
-                    </div>
-                    <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </CardHeader>
-
-                {category.children && category.children.length > 0 && (
-                  <CardContent>
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-slate-700">
-                        Subcategories:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {category.children.slice(0, 5).map((child) => (
-                          <Badge
-                            key={child.id}
-                            variant="secondary"
-                            className="bg-slate-100 text-slate-700 hover:bg-slate-200"
-                          >
-                            {child.name}
-                          </Badge>
-                        ))}
-                        {category.children.length > 5 && (
-                          <Badge
-                            variant="secondary"
-                            className="bg-slate-100 text-slate-700"
-                          >
-                            +{category.children.length - 5} more
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {categories.length > 0 && (
-          <div className="mt-12 text-center">
-            <p className="text-slate-600">
-              Showing {categories.length}{" "}
-              {categories.length === 1 ? "category" : "categories"}
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              All Categories
+            </h1>
+            <p className="text-slate-600 text-lg">
+              Explore our wide range of product categories
             </p>
           </div>
-        )}
+
+          {categories.length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+              <p className="text-slate-600 text-lg">No categories available</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.map((category) => (
+                <Card
+                  key={category.id}
+                  className="group cursor-pointer hover:shadow-xl transition-all duration-300 border-slate-200 hover:border-slate-300 bg-white"
+                  onClick={() => handleCategoryClick(category.id)}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
+                          {category.name}
+                        </CardTitle>
+                        {category.description && (
+                          <CardDescription className="mt-2 text-slate-600">
+                            {category.description}
+                          </CardDescription>
+                        )}
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </CardHeader>
+
+                  {category.children && category.children.length > 0 && (
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-slate-700">
+                          Subcategories:
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {category.children.slice(0, 5).map((child) => (
+                            <Badge
+                              key={child.id}
+                              variant="secondary"
+                              className="bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            >
+                              {child.name}
+                            </Badge>
+                          ))}
+                          {category.children.length > 5 && (
+                            <Badge
+                              variant="secondary"
+                              className="bg-slate-100 text-slate-700"
+                            >
+                              +{category.children.length - 5} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {categories.length > 0 && (
+            <div className="mt-12 text-center">
+              <p className="text-slate-600">
+                Showing {categories.length}{" "}
+                {categories.length === 1 ? "category" : "categories"}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
+      <FooterPart></FooterPart>
     </div>
-    <FooterPart></FooterPart>
-    </div>
-    
+
   );
 }
 
-export default AllCategoriesPage ;
+export default AllCategoriesPage;

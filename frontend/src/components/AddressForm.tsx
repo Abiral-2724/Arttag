@@ -8,20 +8,20 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const initialFormState = {
-  fullname: '', 
-  email: '', 
-  mobile: '', 
-  pincode: '', 
+  fullname: '',
+  email: '',
+  mobile: '',
+  pincode: '',
   city: '',
-  state: '', 
-  country: '', 
-  streetAddress: '', 
-  locality: '', 
-  landmark: '', 
+  state: '',
+  country: '',
+  streetAddress: '',
+  locality: '',
+  landmark: '',
   GSTIN: ''
 };
 
-export default function AddressForm({ userId, address, onSuccess, showAlert } : any) {
+export default function AddressForm({ userId, address, onSuccess, showAlert }: any) {
   const [form, setForm] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
 
@@ -46,30 +46,30 @@ export default function AddressForm({ userId, address, onSuccess, showAlert } : 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const url = address 
+      const url = address
         ? `${API_BASE_URL}/user/${userId}/modify/address`
         : `${API_BASE_URL}/user/${userId}/add/address`;
-      
-      const payload = address 
+
+      const payload = address
         ? { addressId: address.id, ...form }
         : form;
 
       const method = address ? 'patch' : 'post';
       const { data } = await axios[method](url, payload);
-      
+
       if (data.success) {
         showAlert(address ? 'Address updated successfully' : 'Address added successfully');
         onSuccess();
       } else {
         showAlert(data.message, 'error');
       }
-    } catch (error : any) {
+    } catch (error: any) {
       showAlert(error.response?.data?.message || 'Operation failed', 'error');
     }
     setLoading(false);
   };
 
-  const handleChange = (field : any, value : any) => {
+  const handleChange = (field: any, value: any) => {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
@@ -83,30 +83,30 @@ export default function AddressForm({ userId, address, onSuccess, showAlert } : 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">Full Name *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="Enter full name"
-              value={form.fullname} 
-              onChange={(e) => handleChange('fullname', e.target.value)} 
+              value={form.fullname}
+              onChange={(e) => handleChange('fullname', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">Email Address *</Label>
-            <Input 
-              type="email" 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              type="email"
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="your.email@example.com"
-              value={form.email} 
-              onChange={(e) => handleChange('email', e.target.value)} 
+              value={form.email}
+              onChange={(e) => handleChange('email', e.target.value)}
             />
           </div>
           <div className="space-y-2 md:col-span-2">
             <Label className="text-sm font-medium text-gray-700">Mobile Number *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="+91 XXXXXXXXXX"
-              value={form.mobile} 
-              onChange={(e) => handleChange('mobile', e.target.value)} 
+              value={form.mobile}
+              onChange={(e) => handleChange('mobile', e.target.value)}
             />
           </div>
         </div>
@@ -120,65 +120,65 @@ export default function AddressForm({ userId, address, onSuccess, showAlert } : 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2 md:col-span-2">
             <Label className="text-sm font-medium text-gray-700">Street Address *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="House/Flat No., Building Name, Street"
-              value={form.streetAddress} 
-              onChange={(e) => handleChange('streetAddress', e.target.value)} 
+              value={form.streetAddress}
+              onChange={(e) => handleChange('streetAddress', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">Locality *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="Area, Sector"
-              value={form.locality} 
-              onChange={(e) => handleChange('locality', e.target.value)} 
+              value={form.locality}
+              onChange={(e) => handleChange('locality', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">Landmark</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="Near metro station, mall, etc."
-              value={form.landmark} 
-              onChange={(e) => handleChange('landmark', e.target.value)} 
+              value={form.landmark}
+              onChange={(e) => handleChange('landmark', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">City *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="Enter city"
-              value={form.city} 
-              onChange={(e) => handleChange('city', e.target.value)} 
+              value={form.city}
+              onChange={(e) => handleChange('city', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">State *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="Enter state"
-              value={form.state} 
-              onChange={(e) => handleChange('state', e.target.value)} 
+              value={form.state}
+              onChange={(e) => handleChange('state', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">Pincode *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="6 digit pincode"
-              value={form.pincode} 
-              onChange={(e) => handleChange('pincode', e.target.value)} 
+              value={form.pincode}
+              onChange={(e) => handleChange('pincode', e.target.value)}
             />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">Country *</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="Enter country"
-              value={form.country} 
-              onChange={(e) => handleChange('country', e.target.value)} 
+              value={form.country}
+              onChange={(e) => handleChange('country', e.target.value)}
             />
           </div>
         </div>
@@ -192,11 +192,11 @@ export default function AddressForm({ userId, address, onSuccess, showAlert } : 
         <div className="grid grid-cols-1 gap-5">
           <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-700">GSTIN</Label>
-            <Input 
-              className="h-11 border-gray-300 focus:border-black focus:ring-black" 
+            <Input
+              className="h-11 border-gray-300 focus:border-black focus:ring-black"
               placeholder="GST Identification Number"
-              value={form.GSTIN} 
-              onChange={(e) => handleChange('GSTIN', e.target.value)} 
+              value={form.GSTIN}
+              onChange={(e) => handleChange('GSTIN', e.target.value)}
             />
           </div>
         </div>
@@ -204,9 +204,9 @@ export default function AddressForm({ userId, address, onSuccess, showAlert } : 
 
       {/* Submit Button */}
       <div className="pt-4 border-t">
-        <Button 
-          onClick={handleSubmit} 
-          disabled={loading} 
+        <Button
+          onClick={handleSubmit}
+          disabled={loading}
           className="w-full bg-black hover:bg-gray-800 text-white h-12 text-base font-medium rounded-lg transition-all"
         >
           {loading ? (

@@ -617,3 +617,37 @@ export const removeCartItemsFromGift = async(req ,res) => {
         })
     }
 }
+
+
+export const deleteAllItemsOfUserCart = async(req ,res) => {
+    try{
+        const {userId} = req.body ; 
+
+        if(!userId){
+            return res.status(400).json({
+                success : false ,
+                message : 'user id is required'
+            })
+        }
+        const cartitems = await client.cartItems.deleteMany({
+            where : {
+                ownerId : userId
+            }
+        }) ; 
+
+        
+        
+            return res.status(200).json({
+                success : true ,
+                message : 'all items of user cart deleted' ,
+                cartitems 
+            })
+        
+    }catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'remove all items of user cart'
+        })
+    }
+}

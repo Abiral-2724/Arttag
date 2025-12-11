@@ -592,9 +592,7 @@ export const getProductBySpecificType = async (req, res) => {
       const searchTerm = query.trim().toLowerCase();
       const results = [];
   
-      // -----------------------------------
-      // 1. Search Parent Categories
-      // -----------------------------------
+      
       const categories = await client.category.findMany({
         where: {
           name: {
@@ -616,9 +614,7 @@ export const getProductBySpecificType = async (req, res) => {
         });
       });
   
-      // -----------------------------------
-      // 2. Search Subcategories
-      // -----------------------------------
+      
       const subcategories = await client.category.findMany({
         where: {
           name: {
@@ -648,9 +644,7 @@ export const getProductBySpecificType = async (req, res) => {
         });
       });
   
-      // -----------------------------------
-      // 3. Search Products (name only)
-      // -----------------------------------
+      
       const products = await client.product.findMany({
         where: {
           name: {
@@ -667,9 +661,7 @@ export const getProductBySpecificType = async (req, res) => {
         take: 10,
       });
   
-      // -----------------------------------
-      // 4. Batch fetch category hierarchy
-      // -----------------------------------
+      
       const categoryIds = [...new Set(products.map((p) => p.categoryId))];
   
       const categoryMapArr = await client.category.findMany({
@@ -680,9 +672,7 @@ export const getProductBySpecificType = async (req, res) => {
       const categoryMap = {};
       categoryMapArr.forEach((c) => (categoryMap[c.id] = c));
   
-      // -----------------------------------
-      // 5. Add Products to final results
-      // -----------------------------------
+     
       products.forEach((product) => {
         const subcat = categoryMap[product.categoryId];
         if (!subcat) return;

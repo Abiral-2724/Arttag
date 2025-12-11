@@ -19,8 +19,6 @@ const navItems = [
       { name: 'Mackbook', link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1/subcategory/34de1f5c-4dc1-4f78-b9dd-9ee22d2d9618/TECH%20ACCESSORIES' },
       { name: 'PHONE CASES', link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1/subcategory/2367fc28-9e11-4cf6-9500-1c32101652a9/TECH%20ACCESSORIES' },
       { name: 'STANDS', link: '/product/category/cfd5c887-cfc6-4224-9da6-bb8fc85096a1/subcategory/388bbc7d-9204-4f56-be69-9fe6ce3ac91b/TECH%20ACCESSORIES' },
-      // { name: 'Essential Connectors', link: '/products/essential-connectors' },
-      // { name: 'Keyboard & Mouse', link: '/products/keyboard-mouse' }
     ],
     id: "cfd5c887-cfc6-4224-9da6-bb8fc85096a1"
   },
@@ -29,7 +27,6 @@ const navItems = [
     items: [
       { name: 'Backpacks', link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0/subcategory/14e1bb91-105f-49c5-9a30-0ed73dcbec64/BAGS%20&%20WALLETS' },
       { name: 'Wallets', link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0/subcategory/f3c079fc-1321-461b-bf04-a747c8497745/BAGS%20&%20WALLETS' },
-    
     ],
     id: "e60bc235-8d04-4c31-b229-ba3a71f25fb0"
   },
@@ -37,10 +34,6 @@ const navItems = [
     name: 'WORK ESSENTIALS',
     items: [
       { name: 'DESKS', link: '/product/category/8c9213f1-2ce7-4066-80f1-3dad45afab17/subcategory/ae1a8dd8-4398-4637-a3ab-22dbfd110150/WORK%20ESSENTIALS' },
-      // { name: 'Wallets', link: '/products/wallets' },
-      // { name: 'Female Handbags', link: '/products/female-handbags' },
-      // { name: 'Water Bottles', link: '/products/water-bottles' },
-      // { name: 'Stationery', link: '/products/stationery' }
     ],
     id: "8c9213f1-2ce7-4066-80f1-3dad45afab17"
   },
@@ -53,11 +46,6 @@ const navItems = [
     ],
     id: "6578853f-a315-4c27-acd2-d1ca33f55135"
   },
-  // {
-  //   name: 'All CATEGORY',
-  //   items: [],
-  //   link: '/allcategory'
-  // }
 ];
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -262,11 +250,10 @@ const Navbar = ({ page }: any) => {
 
                   {page !== "cart" && (
                     <Link href={'/search'}>
-<button className="group">
-                      <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
-                    </button>
+                      <button className="group">
+                        <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
+                      </button>
                     </Link>
-                    
                   )}
 
                   {isAdmin && (
@@ -284,10 +271,9 @@ const Navbar = ({ page }: any) => {
                   {page !== "cart" && (
                     <Link href={'/search'}>
                       <button className="group">
-                      <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
-                    </button>
+                        <Search className="w-5 h-5 lg:w-[22px] lg:h-[22px] text-gray-700 stroke-[1.5] group-hover:text-teal-600 transition-colors" />
+                      </button>
                     </Link>
-                  
                   )}
 
                   <Button
@@ -326,62 +312,61 @@ const Navbar = ({ page }: any) => {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
-            <div className="px-4 py-4 space-y-2">
-              {/* Mobile Navigation Items */}
+          <div className="md:hidden bg-white border-t border-gray-200 shadow-lg max-h-[calc(90vh-4rem)] overflow-y-auto">
+            <div className="px-0 py-0">
+              {/* Mobile Navigation Items - Large Cards */}
               {page !== "cart" && navItems.map((item, idx) => (
-                <div key={idx} className="border-b border-gray-100 pb-2">
-                  {item.items.length > 0 ? (
-                    <>
-                      <button
-                        onClick={() => toggleCategory(idx)}
-                        className="flex items-center justify-between w-full py-3 text-sm font-semibold text-gray-800 hover:text-teal-600 transition-colors"
-                      >
-                        {item.name}
-                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedCategory === idx ? 'rotate-180' : ''}`} />
-                      </button>
-
-                      {expandedCategory === idx && (
-                        <div className="pl-4 space-y-1 mt-2 bg-gray-50 rounded-lg p-3">
-                          {item.items.map((subItem, subIdx) => (
-                            <Link
-                              key={subIdx}
-                              href={subItem.link}
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              <div className="py-2.5 px-3 text-sm font-medium text-gray-700 hover:text-teal-600 hover:bg-white rounded-lg transition-all flex items-center justify-between group">
-                                <span>{subItem.name}</span>
-                                <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            </Link>
-                          ))}
-                          {item.id && (
-                            <Link
-                              href={`/product/category/${item.id}`}
-                              className="block mt-2 py-2.5 px-4 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-sm font-bold rounded-lg text-center shadow-md"
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              View All
-                            </Link>
-                          )}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <Link
-                      href={item.link || '/allcategory'}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <button className="flex items-center justify-between w-full py-3 text-sm font-semibold text-gray-800 hover:text-teal-600 transition-colors">
-                        {item.name}
-                      </button>
-                    </Link>
-                  )}
-                </div>
+                <Link
+                  key={idx}
+                  href={item.id ? `/product/category/${item.id}` : '/allcategory'}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <div className="relative h-38 border-b border-gray-200 overflow-hidden group cursor-pointer bg-gradient-to-br from-gray-50 to-gray-100 hover:from-teal-50 hover:to-cyan-50 transition-all duration-300">
+                    {/* Background with product image placeholder */}
+                    <div className="absolute inset-0 flex items-center justify-between px-8">
+                      {/* Category Name */}
+                      <div className="z-10">
+                        <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
+                          {item.name.split(' ')[0]}
+                        </h2>
+                        {item.name.split(' ').length > 1 && (
+                          <h3 className="text-xl font-bold text-gray-700 group-hover:text-teal-500 transition-colors">
+                            {item.name.split(' ').slice(1).join(' ')}
+                          </h3>
+                        )}
+                      </div>
+                      
+                      {/* Placeholder for product image */}
+                      <div className="w-40 h-40 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                        {idx === 0 && (
+                          <div className="text-6xl">📱</div>
+                        )}
+                        {idx === 1 && (
+                          <div className="text-6xl">👜</div>
+                        )}
+                        {idx === 2 && (
+                          <div className="text-6xl">💻</div>
+                        )}
+                        {idx === 3 && (
+                          <div className="text-6xl">🎁</div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-teal-600/0 to-cyan-600/0 group-hover:from-teal-600/5 group-hover:to-cyan-600/5 transition-all duration-300" />
+                  </div>
+                </Link>
               ))}
 
+              {/* Additional Category - GIFTING */}
+              
+
+              {/* COLLECTIONS */}
+              
+
               {/* Mobile User Actions */}
-              <div className="pt-4 space-y-3 border-t border-gray-200">
+              <div className="p-6 space-y-3 bg-gray-50">
                 {isAuthenticated ? (
                   <>
                     <button
@@ -389,7 +374,7 @@ const Navbar = ({ page }: any) => {
                         handleProfileClick();
                         setMobileMenuOpen(false);
                       }}
-                      className="flex items-center gap-3 w-full py-3 px-4 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded-lg transition-all"
+                      className="flex items-center gap-3 w-full py-4 px-5 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm"
                     >
                       <User className="w-5 h-5 text-teal-600" />
                       Profile
@@ -397,12 +382,11 @@ const Navbar = ({ page }: any) => {
 
                     {page !== "cart" && (
                       <Link href={'/search'}>
-                       <button className="flex items-center gap-3 w-full py-3 px-4 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded-lg transition-all">
-                        <Search className="w-5 h-5 text-teal-600" />
-                        Search
-                      </button>
+                        <button className="flex items-center gap-3 w-full py-4 px-5 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm">
+                          <Search className="w-5 h-5 text-teal-600" />
+                          Search
+                        </button>
                       </Link>
-                     
                     )}
 
                     {isAdmin && (
@@ -412,7 +396,7 @@ const Navbar = ({ page }: any) => {
                           handleAdminPage();
                           setMobileMenuOpen(false);
                         }}
-                        className='w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0'
+                        className='w-full py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white border-0 rounded-xl shadow-md text-base font-semibold'
                       >
                         Admin Panel
                       </Button>
@@ -422,13 +406,11 @@ const Navbar = ({ page }: any) => {
                   <>
                     {page !== "cart" && (
                       <Link href={'/search'}>
-                       <button className="flex items-center gap-3 w-full py-3 px-4 text-sm font-medium text-gray-800 hover:bg-gray-50 rounded-lg transition-all"
-                      >
-                        <Search className="w-5 h-5 text-teal-600" />
-                        Search
-                      </button>
+                        <button className="flex items-center gap-3 w-full py-4 px-5 text-base font-semibold text-gray-800 bg-white hover:bg-gray-100 rounded-xl transition-all shadow-sm">
+                          <Search className="w-5 h-5 text-teal-600" />
+                          Search
+                        </button>
                       </Link>
-                     
                     )}
 
                     <Button
@@ -436,7 +418,7 @@ const Navbar = ({ page }: any) => {
                         handleLoginClick();
                         setMobileMenuOpen(false);
                       }}
-                      className='w-full bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white py-3 shadow-md'
+                      className='w-full py-4 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-md rounded-xl text-base font-semibold'
                     >
                       Login
                     </Button>

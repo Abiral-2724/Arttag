@@ -6,9 +6,9 @@ import client from "../prisma.js";
 
 export const placingOrderOfProduct = async(req ,res) => {
     try{
-            const {userId ,subtotal ,discountAmount,shippingCharge,taxAmount ,cart} = req.body ;
+            const {userId ,subtotal ,discountAmount,shippingCharge,taxAmount ,cart ,addressId ,paymentType} = req.body ;
 
-            if(!userId || !subtotal || !discountAmount){
+            if(!userId || !subtotal){
                 return res.status(400).json({
                     success : false ,
                     message : 'fields missing all fields are required'
@@ -28,7 +28,9 @@ export const placingOrderOfProduct = async(req ,res) => {
                 shippingCharge : shippingCharge ,
                 taxAmount : taxAmount ,
                 totalAmount : totalAmount,
-                orderNumber : orderNumber
+                orderNumber : orderNumber ,
+                addressId : addressId ,
+                paymentType : paymentType 
             } 
           })  
 

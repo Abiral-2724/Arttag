@@ -39,17 +39,17 @@ export default function OrderSection({ orders, showAlert } : any) {
   };
 
   return (
-    <CardContent className="p-8">
+    <CardContent className="p-4 sm:p-6 lg:p-8">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">My Orders</h2>
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">My Orders</h2>
         
-        <div className="mb-6 border-b border-gray-200 overflow-x-auto">
+        <div className="mb-4 sm:mb-6 border-b border-gray-200 overflow-x-auto">
           <div className="flex gap-1 min-w-max">
             {ORDER_STATUS_TABS.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-black text-black'
                     : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -67,24 +67,24 @@ export default function OrderSection({ orders, showAlert } : any) {
         </div>
 
         {filteredOrders.length === 0 ? (
-          <div className="text-center py-12">
-            <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No orders found</p>
-            <p className="text-sm text-gray-400 mt-2">
+          <div className="text-center py-8 sm:py-12">
+            <Package className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-sm sm:text-base text-gray-500">No orders found</p>
+            <p className="text-xs sm:text-sm text-gray-400 mt-2">
               {activeTab === 'ALL' 
                 ? 'Start shopping to see your orders here' 
                 : `No ${activeTab.toLowerCase()} orders`}
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {filteredOrders.map((order : any) => (
               <Card key={order.id} className="border border-gray-200 hover:border-gray-300 transition-all">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0 mb-4">
                     <div>
-                      <p className="font-semibold text-gray-900">Order #{order.orderNumber}</p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="font-semibold text-sm sm:text-base text-gray-900">Order #{order.orderNumber}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1">
                         {new Date(order.createdAt).toLocaleDateString('en-US', { 
                           year: 'numeric', 
                           month: 'long', 
@@ -92,31 +92,31 @@ export default function OrderSection({ orders, showAlert } : any) {
                         })}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={`${getOrderStatusColor(order.status)} px-3 py-1`}>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge className={`${getOrderStatusColor(order.status)} px-2 sm:px-3 py-1 text-xs`}>
                         {order.status}
                       </Badge>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => openOrderDetails(order)}
-                        className="ml-2"
+                        className="text-xs sm:text-sm"
                       >
-                        <Eye className="w-4 h-4 mr-1" />
+                        <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         View Details
                       </Button>
                     </div>
                   </div>
-                  <Separator className="my-4" />
+                  <Separator className="my-3 sm:my-4" />
                   <div className="space-y-2">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600">
                       {order.items?.length} item{order.items?.length !== 1 ? 's' : ''}
                     </p>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-gray-700">Total Amount</span>
-                      <span className="text-lg font-bold text-gray-900">₹{order.totalAmount || '0.00'}</span>
+                      <span className="text-sm sm:text-base font-semibold text-gray-700">Total Amount</span>
+                      <span className="text-base sm:text-lg font-bold text-gray-900">₹{order.totalAmount || '0.00'}</span>
                     </div>
                   </div>
                 </CardContent>
