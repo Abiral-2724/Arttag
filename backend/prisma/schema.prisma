@@ -116,6 +116,7 @@ model Product {
   primaryImage1              String
   primaryImage2              String
   categoryId                 String
+  totalCount Int @default(0)
   // category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   wishlists Wishlist[]

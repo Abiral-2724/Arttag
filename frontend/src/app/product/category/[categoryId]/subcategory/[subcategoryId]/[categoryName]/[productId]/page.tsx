@@ -158,6 +158,12 @@ const ProductDetailPage = () => {
       return;
     }
 
+    // Check if product is out of stock
+    if (product.totalCount === 0) {
+      alert('This product is currently out of stock');
+      return;
+    }
+
     if (isInCart) {
       router.push(`/${userId}/cart`);
       return;
@@ -444,6 +450,26 @@ const ProductDetailPage = () => {
                 <span className="text-xl text-gray-500 line-through">₹{product.originalPrice}</span>
                 <span className="text-sm text-gray-600">MRP Inclusive of all taxes</span>
               </div>
+              
+              {/* Stock Availability Badge */}
+              <div className="mb-4">
+                {product.totalCount === 0 ? (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-red-700">Out of Stock</span>
+                  </div>
+                ) : product.totalCount < 20 ? (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-amber-700">Limited Stock Available ({product.totalCount} left)</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-green-700">In Stock</span>
+                  </div>
+                )}
+              </div>
             </div>
             {product.shortDescription && (
               <div>
@@ -476,9 +502,9 @@ const ProductDetailPage = () => {
             {/* Add to Cart Button - Desktop Only */}
             <button
               onClick={handleAddToCart}
-              disabled={addingToCart}
+              disabled={addingToCart || product.totalCount === 0}
               className={`hidden md:block w-[76%] py-3 rounded-lg font-medium text-lg transition-colors ${
-                addingToCart
+                addingToCart || product.totalCount === 0
                   ? 'bg-gray-400 cursor-not-allowed'
                   : !isLoggedIn
                   ? 'bg-blue-700 hover:bg-blue-600'
@@ -487,7 +513,9 @@ const ProductDetailPage = () => {
                   : 'bg-blue-700 hover:bg-blue-600'
               } text-white`}
             >
-              {addingToCart 
+              {product.totalCount === 0
+                ? 'OUT OF STOCK'
+                : addingToCart 
                 ? 'ADDING...' 
                 : !isLoggedIn 
                 ? 'LOGIN TO ADD TO CART' 
@@ -495,34 +523,6 @@ const ProductDetailPage = () => {
                 ? 'GO TO CART' 
                 : 'ADD TO CART'}
             </button>
-
-            {/* Features */}
-            {/* <div className="grid grid-cols-4 gap-4 py-4 border-y border-gray-200">
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
-                  <Package className="w-8 h-8" />
-                </div>
-                <p className="text-xs">MagSafe-Ready</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
-                  <CreditCard className="w-8 h-8" />
-                </div>
-                <p className="text-xs">3 Cards</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
-                  <Check className="w-8 h-8" />
-                </div>
-                <p className="text-xs">Built-in Stand</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
-                  <RotateCcw className="w-8 h-8" />
-                </div>
-                <p className="text-xs">Adjustable View</p>
-              </div>
-            </div> */}
 
             {/* Product Description */}
             <div className="bg-white rounded-lg pl-5 pr-7">
@@ -670,9 +670,9 @@ const ProductDetailPage = () => {
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50">
         <button
           onClick={handleAddToCart}
-          disabled={addingToCart}
+          disabled={addingToCart || product.totalCount === 0}
           className={`w-full py-4 rounded-lg font-medium text-lg transition-colors ${
-            addingToCart
+            addingToCart || product.totalCount === 0
               ? 'bg-gray-400 cursor-not-allowed'
               : !isLoggedIn
               ? 'bg-blue-700 hover:bg-blue-600'
@@ -681,7 +681,9 @@ const ProductDetailPage = () => {
               : 'bg-blue-700 hover:bg-blue-600'
           } text-white`}
         >
-          {addingToCart 
+          {product.totalCount === 0
+            ? 'OUT OF STOCK'
+            : addingToCart 
             ? 'ADDING...' 
             : !isLoggedIn 
             ? 'LOGIN TO ADD TO CART' 
