@@ -234,7 +234,7 @@ export default function DailyObjectsReplica() {
 
       {/* Shop by Category Section */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <h2 className="text-xl sm:text-2xl md:text-[30px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-4 sm:mb-5 tracking-tight uppercase">
+        <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-4 sm:mb-5 tracking-tight uppercase">
           SHOP BY CATEGORY
         </h2>
 
@@ -259,7 +259,7 @@ export default function DailyObjectsReplica() {
             {shopByCategories.map((category, index) => (
               <Link key={index} href={category.link} className="flex-shrink-0 w-[85vw] snap-center">
                 <div className="group/item relative rounded-xl cursor-pointer overflow-hidden">
-                  <div className="aspect-[4/6] relative overflow-hidden">
+                  <div className="aspect-[3/5] relative overflow-hidden">
                     <img
                       src={category.image}
                       alt={category.title}
@@ -291,11 +291,11 @@ export default function DailyObjectsReplica() {
         </div>
 
         {/* Desktop Grid */}
-        <div className="hidden sm:grid sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+        <div className="hidden sm:grid sm:grid-cols-3">
           {shopByCategories.map((category, index) => (
             <Link key={index} href={category.link}>
               <div className="group relative rounded-xl sm:rounded-2xl cursor-pointer overflow-hidden">
-                <div className="aspect-[4/5] sm:aspect-[3.5/5] lg:aspect-[3.3/5] relative overflow-hidden">
+                <div className="aspect-[4.5/5] sm:aspect-[3.3/5] lg:aspect-[3/5] relative overflow-hidden">
                   <img
                     src={category.image}
                     alt={category.title}
@@ -331,8 +331,8 @@ export default function DailyObjectsReplica() {
 
       {/* Top Categories Section - Enhanced */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
-        <h2 className="text-2xl sm:text-2xl md:text-[30px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-6 sm:mb-8 tracking-tight uppercase">
-          TOP CATEGORIES
+        <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-6 sm:mb-8 tracking-tight ">
+          Top Categories
         </h2>
 
         {isLoadingCategories ? (
@@ -394,6 +394,121 @@ export default function DailyObjectsReplica() {
         )}
       </div>
 
+      {/* Trending Collections Section */}
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
+        <div className="flex justify-between items-center mb-6 sm:mb-8 ml-2 sm:ml-3 md:ml-5">
+          <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans text-black tracking-tight uppercase">
+            TRENDING COLLECTIONS
+          </h2>
+         
+        </div>
+
+        {/* Mobile Slider */}
+        <div className="sm:hidden relative">
+          <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory">
+            {[
+              {
+                title: 'REFLECTIVE',
+                description: 'Carryalls that mirror your urban spirit of transience',
+                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1reflective_zsi3kc.avif',
+                link: '/collection/reflective'
+              },
+              {
+                title: 'CANVAS',
+                description: 'Classic staples for every day carry',
+                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1canvas_u6oaeu.avif',
+                link: '/collection/canvas'
+              },
+              {
+                title: 'CARBON BLACK',
+                description: 'Comfort carryalls in a quintessentially classic colour',
+                image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1carbon-black_xbdc38.avif',
+                link: '/collection/carbon-black'
+              }
+            ].map((collection, index) => (
+              <div key={index} className="flex-shrink-0 w-[85vw] snap-center">
+                <div className="relative rounded-2xl overflow-hidden group cursor-pointer h-[500px]">
+                  <img
+                    src={collection.image}
+                    alt={collection.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                  
+                  <div className="absolute bottom-8 left-6 right-6">
+                    <h3 className="text-white text-2xl font-black uppercase tracking-tight mb-3">
+                      {collection.title}
+                    </h3>
+                    <p className="text-white/90 text-sm font-light mb-5 leading-relaxed">
+                      {collection.description}
+                    </p>
+                    <button className="flex items-center gap-2 text-white font-semibold text-sm group/btn hover:gap-3 transition-all">
+                      Shop now!
+                      <div className="rounded-full border-2 border-white w-8 h-8 flex items-center justify-center group-hover/btn:bg-white transition-all">
+                        <ArrowRight className="w-4 h-4 group-hover/btn:text-black transition-colors" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Desktop Grid */}
+        <div className="hidden sm:grid sm:grid-cols-3">
+          {[
+            {
+              title: 'REFLECTIVE',
+              description: 'Carryalls that mirror your urban spirit of transience',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1reflective_zsi3kc.avif',
+              link: '/collection/reflective'
+            },
+            {
+              title: 'CANVAS',
+              description: 'Classic staples for every day carry',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1canvas_u6oaeu.avif',
+              link: '/collection/canvas'
+            },
+            {
+              title: 'CARBON BLACK',
+              description: 'Comfort carryalls in a quintessentially classic colour',
+              image: 'https://res.cloudinary.com/dci6nuwrm/image/upload/v1767611737/Shop-by-category-1carbon-black_xbdc38.avif',
+              link: '/collection/carbon-black'
+            }
+          ].map((collection, index) => (
+            <Link key={index} href={collection.link}>
+              <div className="relative rounded-2xl overflow-hidden group cursor-pointer aspect-[3/5]">
+                <img
+                  src={collection.image}
+                  alt={collection.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                
+                <div className="absolute bottom-6 sm:bottom-8 md:bottom-10 left-6 sm:left-8 right-6 sm:right-8">
+                  <h3 className="text-white text-xl sm:text-2xl md:text-[28px] font-black uppercase tracking-tight mb-2 sm:mb-3">
+                    {collection.title}
+                  </h3>
+                  <p className="text-white/90 text-xs sm:text-sm md:text-base font-light mb-4 sm:mb-6 leading-relaxed">
+                    {collection.description}
+                  </p>
+                  
+                  <button className="flex items-center gap-2 text-white font-light text-sm sm:text-base group/btn hover:gap-3 transition-all">
+                   
+                    Shop now!
+                    <div className="rounded-full border-1 border-white w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center group-hover/btn:bg-white transition-all">
+                      <ArrowRight className="w-3 h-4 sm:w-5 sm:h-5 group-hover/btn:text-black transition-colors" />
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      
       <section>
         <Footer />
       </section>

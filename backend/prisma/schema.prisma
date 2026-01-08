@@ -60,6 +60,7 @@ model User {
   reviews   Review[]
   carts     CartItems[]
   orders    Orders[]
+  review customerReview[]
 }
 
 model Address {
@@ -88,6 +89,7 @@ model Category {
   parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children  Category[] @relation("CategoryHierarchy")
   // products    Product[]
+
   createdAt DateTime   @default(now())
 }
 
@@ -125,6 +127,7 @@ model Product {
   cart      CartItems[]
   orders    OrderItem[]
   colors    ProductColor[]
+  review    customerReview[]
 }
 
 model ProductColor {
@@ -172,40 +175,6 @@ model Review {
   order   Orders  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
-model Orders {
-  id             String        @id @default(uuid())
-  orderNumber    String        @unique
-  userId         String
-  status         OrderStatus   @default(PENDING)
-  paymentStatus  PaymentStatus @default(PENDING)
-  paymentType   PaymentType @default(CASEONDELIVERY)
-  subtotal       Int
-  discountAmount Int           @default(0)
-  shippingCharge Int           @default(0)
-  taxAmount      Int           @default(0)
-  totalAmount    Int
-  addressId      String        @default("")
-  createdAt      DateTime      @default(now())
-
-  // Relations
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items   OrderItem[]
-  reviews Review[]
-}
-
-model OrderItem {
-  id         String @id @default(uuid())
-  orderId    String
-  productId  String
-  price      Int
-  discount   Int
-  finalPrice Int
-  quantity   Int
-
-  order   Orders  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-}
-
 model CartItems {
   id                       String   @id @default(uuid())
   ownerId                  String
@@ -238,4 +207,50 @@ model CouponsCode {
 model Pincode {
   id      String @id @default(uuid())
   pincode Int
+}
+
+model customerReview {
+  id String @id @default(uuid())
+  userId String
+  user User @relation(fields: [userId] ,references: [id] ,onDelete: Cascade)
+  productId String
+  product Product @relation(fields: [productId] ,references: [id] ,onDelete: Cascade)
+  title String?
+  description String
+  rating Int
+  createdAt   DateTime @default(now())
+}
+
+model Orders {
+  id             String        @id @default(uuid())
+  orderNumber    String        @unique
+  userId         String
+  status         OrderStatus   @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  paymentType   PaymentType @default(CASEONDELIVERY)
+  subtotal       Int
+  discountAmount Int           @default(0)
+  shippingCharge Int           @default(0)
+  taxAmount      Int           @default(0)
+  totalAmount    Int
+  addressId      String        @default("")
+  createdAt      DateTime      @default(now())
+
+  // Relations
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items   OrderItem[]
+  reviews Review[]
+}
+
+model OrderItem {
+  id         String @id @default(uuid())
+  orderId    String
+  productId  String
+  price      Int
+  discount   Int
+  finalPrice Int
+  quantity   Int
+
+  order   Orders  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

@@ -9,7 +9,7 @@ import wishListRoute from './routes/wishlist.routes.js'
 import cartRoute from './routes/cart.routes.js'
 import orderRoute from './routes/order.routes.js'
 import coupenRoute from './routes/coupen.routes.js'
-
+import reviewRoute from './routes/customerReview.routes.js'
 const app = express() ; 
 
 dotenv.config({}) ; 
@@ -61,6 +61,7 @@ app.use('/api/v1/order' ,orderRoute);
 
 app.use('/api/v1/coupen' ,coupenRoute);
 
+app.use('/api/v1/review' ,reviewRoute)
 
 app.listen(PORT ,() => {
     console.log(`Server running at ${PORT}`) ; 

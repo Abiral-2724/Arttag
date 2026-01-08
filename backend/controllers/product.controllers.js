@@ -224,55 +224,6 @@ export const getProductDetailsById = async(req ,res) => {
     }
 }
 
-export const deleteProductById = async(req ,res) => {
-    try{
-            const {productId} = req.body ; 
-            const userId = req.params.userId ; 
-
-            const user = await client.user.findFirst(
-                { 
-                    where:
-                     { 
-                        id: userId
-                     } 
-                    }
-                );
-            if (!user) {
-              return res.status(400).json({
-                success: false,
-                message: "No user exists with this ID",
-              });
-            }
-        
-            if (user.role === "USER") {
-              return res.status(403).json({
-                success: false,
-                message: "You have no right to delete a product",
-              });
-            }
-        
-
-            const product = await client.product.delete({
-                where : {
-                    id : productId
-                }
-            })
-
-            return res.status(200).json({
-                success: false,
-                message: "product deleted succesfully !!",
-              });
-    }
-    catch(e){
-        console.log(e) ; 
-        return res.status(500).json({
-            success : false ,
-            message : 'error while getting product details ,please try again later !'
-        })
-    }
-}
-
-
 
 
 export const getallProductoftheCategory = async(req ,res) => {
@@ -702,3 +653,248 @@ export const getProductBySpecificType = async (req, res) => {
     }
   };
   
+export const updateStockOfProduct = async(req ,res) => {
+  try{
+      const {productId ,newStock} = req.body ; 
+
+      if(!productId || !newStock){
+        return res.status(400).json({
+          success: false,
+          message: "Missing field",
+        });
+      }
+
+      const productExits = await client.product.findFirst({
+        where : {
+          id : productId
+        }
+      })
+
+        if(!productExits){
+          return res.status(400).json({
+            success: false,
+            message: "No such product exits",
+          });
+        }
+
+        const updatedProductWithStock = await client.product.update({
+          where : {
+            id : productId
+          } ,
+          data:{
+            totalCount : newStock
+          }
+        })
+
+        return res.status(200).json({
+          success : true ,
+          message : "Stock of product updated successfully" ,
+          product : updatedProductWithStock
+        })
+  }
+  catch(e){
+    console.error( e);
+      return res.status(500).json({
+        success: false,
+        message: "Error while updating product stock. Please try again later!",
+      });
+  }
+}
+
+export const deleteProductById = async(req ,res) => {
+  try{
+          const {productId} = req.body ; 
+          const userId = req.params.userId ; 
+
+          const user = await client.user.findFirst(
+              { 
+                  where:
+                   { 
+                      id: userId
+                   } 
+                  }
+              );
+          if (!user) {
+            return res.status(400).json({
+              success: false,
+              message: "No user exists with this ID",
+            });
+          }
+      
+          if (user.role === "USER") {
+            return res.status(403).json({
+              success: false,
+              message: "You have no right to delete a product",
+            });
+          }
+      
+
+          const product = await client.product.delete({
+              where : {
+                  id : productId
+              }
+          })
+
+          return res.status(200).json({
+              success: true,
+              message: "product deleted succesfully !!",
+            });
+  }
+  catch(e){
+      console.log(e) ; 
+      return res.status(500).json({
+          success : false ,
+          message : 'error while getting product details ,please try again later !'
+      })
+  }
+}
+
+export const editProductDetails = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    // 1️⃣ Check product
+    const existingProduct = await client.product.findUnique({
+      where: { id: productId },
+      include: { images: true },
+    });
+
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    // 2️⃣ Extract body fields
+    const {
+      name,
+      description,
+      shortDescription,
+      originalPrice,
+      discountPrice,
+      type,
+      tags,
+      material,
+      dimensions,
+      weight,
+      packageContent,
+      care,
+      countryOfOrigin,
+      manufacturerName,
+      packerName,
+      importerName,
+      delivery,
+      caseOnDeliveryAvailability,
+      returnDetails,
+      categoryId,
+      totalCount,
+      replaceModelImages // "true" | "false"
+    } = req.body;
+
+    // 3️⃣ Build update object dynamically
+    const updateData = {
+      ...(name && { name }),
+      ...(description && { description }),
+      ...(shortDescription && { shortDescription }),
+      ...(originalPrice && { originalPrice: Number(originalPrice) }),
+      ...(discountPrice && { discountPrice: Number(discountPrice) }),
+      ...(type && { type }),
+      ...(material && { material }),
+      ...(dimensions && { dimensions }),
+      ...(weight && { weight: parseFloat(weight) }),
+      ...(packageContent && { packageContent }),
+      ...(care && { care }),
+      ...(countryOfOrigin && { countryOfOrigin }),
+      ...(manufacturerName && { manufacturerName }),
+      ...(packerName && { packerName }),
+      ...(importerName && { importerName }),
+      ...(delivery && { delivery }),
+      ...(returnDetails && { returnDetails }),
+      ...(categoryId && { categoryId }),
+      ...(totalCount && { totalCount: Number(totalCount) }),
+      ...(caseOnDeliveryAvailability !== undefined && {
+        caseOnDeliveryAvailability: caseOnDeliveryAvailability === "true",
+      }),
+      ...(tags && {
+        tags: typeof tags === "string" ? JSON.parse(tags) : tags,
+      }),
+    };
+
+    // 4️⃣ Upload primary images if provided
+    const primaryImage1File = req.files?.find(f => f.fieldname === "primaryImage1");
+    const primaryImage2File = req.files?.find(f => f.fieldname === "primaryImage2");
+
+    if (primaryImage1File) {
+      const upload = await cloudinary.uploader.upload(
+        `data:${primaryImage1File.mimetype};base64,${primaryImage1File.buffer.toString("base64")}`,
+        { folder: "project_files" }
+      );
+      updateData.primaryImage1 = upload.secure_url;
+    }
+
+    if (primaryImage2File) {
+      const upload = await cloudinary.uploader.upload(
+        `data:${primaryImage2File.mimetype};base64,${primaryImage2File.buffer.toString("base64")}`,
+        { folder: "project_files" }
+      );
+      updateData.primaryImage2 = upload.secure_url;
+    }
+
+    // 5️⃣ Update product core details
+    await client.product.update({
+      where: { id: productId },
+      data: updateData,
+    });
+
+    // 6️⃣ Replace model images (optional)
+    const modelImages = req.files?.filter(f => f.fieldname === "modelImages");
+
+    if (replaceModelImages === "true" && modelImages?.length) {
+      // delete old images
+      await client.productImages.deleteMany({
+        where: { productId },
+      });
+
+      // add new ones
+      for (const file of modelImages) {
+        const upload = await cloudinary.uploader.upload(
+          `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
+          { folder: "project_files" }
+        );
+
+        await client.productImages.create({
+          data: {
+            url: upload.secure_url,
+            altText: file.originalname,
+            productId,
+          },
+        });
+      }
+    }
+
+    // 7️⃣ Final product
+    const updatedProduct = await client.product.findUnique({
+      where: { id: productId },
+      include: {
+        images: true,
+        colors: true,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
+
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({
+      success: false,
+      message: "Error while updating product",
+    });
+  }
+};
+
+

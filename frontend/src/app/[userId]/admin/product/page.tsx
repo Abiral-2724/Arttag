@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus, Upload, X, Eye, Package } from 'lucide-react';
+import { Trash2, Plus, Upload, X, Eye, Package, Edit } from 'lucide-react';
 import axios from 'axios';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -22,54 +22,25 @@ import FooterPart from '@/components/FooterPart';
 
 export default function ProductAdminPortal() {
   const router = useRouter();
-  const [products, setProducts]: any = useState([]);
+  const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', type: 'success' });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [viewProduct, setViewProduct]: any = useState(null);
+  const [viewProduct, setViewProduct] = useState(null);
   const [isChecking, setIsChecking] = useState(true);
+  const [editProduct, setEditProduct] = useState(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [isStockDialogOpen, setIsStockDialogOpen] = useState(false);
+  const [stockProduct, setStockProduct] = useState(null);
+  const [newStock, setNewStock] = useState('');
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
   const { userId } = useParams();
 
-
-
-  useEffect(() => {
-    const checkAccess = async () => {
-      try {
-        const storedUserId = localStorage.getItem("arttagUserId");
-        const storedToken = localStorage.getItem("arttagtoken");
-
-        // 🔹 Instant redirect if no user or mismatch
-        if (!storedUserId || !storedToken || storedUserId !== userId) {
-          router.replace("/login");
-          return;
-        }
-
-        // 🔹 Verify role via backend
-        const response = await axios.get(`${API_BASE_URL}/user/${userId}/get/profile`);
-
-        if (!response.data.success || response.data.user.role !== "ADMIN") {
-          router.replace("/login");
-          return;
-        }
-
-      } catch (error) {
-        console.error("Error verifying user:", error);
-        router.replace("/login");
-      } finally {
-        setIsChecking(false); // ✅ stop loading only when verification is done
-      }
-    };
-
-    if (userId) checkAccess();
-  }, [userId, router]);
-
-
-
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -91,19 +62,61 @@ export default function ProductAdminPortal() {
     caseOnDeliveryAvailability: 'false',
     returnDetails: '',
     categoryId: '',
-    subcategoryId: ''
+    subcategoryId: '',
+    totalCount: ''
   });
 
   const [colors, setColors] = useState([{ name: '', hex: '#000000', images: [] }]);
-  const [modelImages, setModelImages]: any = useState([]);
-  const [modelImageDescriptions, setModelImageDescriptions]: any = useState([]);
-  const [primaryImage1, setPrimaryImage1]: any = useState(null);
-  const [primaryImage2, setPrimaryImage2]: any = useState(null);
+  const [modelImages, setModelImages] : any = useState([]);
+  const [modelImageDescriptions, setModelImageDescriptions] : any = useState([]);
+  const [primaryImage1, setPrimaryImage1] = useState(null);
+  const [primaryImage2, setPrimaryImage2] = useState(null);
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const storedUserId = localStorage.getItem("arttagUserId");
+        const storedToken = localStorage.getItem("arttagtoken");
+
+        if (!storedUserId || !storedToken || storedUserId !== userId) {
+          router.replace("/login");
+          return;
+        }
+
+        const response = await axios.get(`${API_BASE_URL}/user/${userId}/get/profile`);
+
+        if (!response.data.success || response.data.user.role !== "ADMIN") {
+          router.replace("/login");
+          return;
+        }
+
+      } catch (error) {
+        console.error("Error verifying user:", error);
+        router.replace("/login");
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    if (userId) checkAccess();
+  }, [userId, router]);
 
   useEffect(() => {
     fetchProducts();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredProducts(products);
+    } else {
+      const filtered = products.filter((product : any) =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.type?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchQuery, products]);
 
   const fetchProducts = async () => {
     try {
@@ -111,6 +124,7 @@ export default function ProductAdminPortal() {
       const response = await axios.get(`${API_BASE_URL}/product/get/all/product`);
       if (response.data.success) {
         setProducts(response.data.data);
+        setFilteredProducts(response.data.data);
       }
     } catch (error) {
       showAlert('Failed to fetch products', 'error');
@@ -171,7 +185,7 @@ export default function ProductAdminPortal() {
   };
 
   const handleColorImageUpload = (index, files) => {
-    const newColors: any = [...colors];
+    const newColors : any = [...colors];
     newColors[index].images = [...newColors[index].images, ...Array.from(files)];
     setColors(newColors);
   };
@@ -194,7 +208,7 @@ export default function ProductAdminPortal() {
   };
 
   const updateModelImageDescription = (index, description) => {
-    const newDescriptions: any = [...modelImageDescriptions];
+    const newDescriptions = [...modelImageDescriptions];
     newDescriptions[index] = description;
     setModelImageDescriptions(newDescriptions);
   };
@@ -213,28 +227,23 @@ export default function ProductAdminPortal() {
       setLoading(true);
       const formDataToSend = new FormData();
 
-      // Add all text fields
       Object.keys(formData).forEach(key => {
         if (key !== 'categoryId' && key !== 'subcategoryId') {
           formDataToSend.append(key, formData[key]);
         }
       });
 
-      // Add primary images
       if (primaryImage1) formDataToSend.append('primaryImage1', primaryImage1);
       if (primaryImage2) formDataToSend.append('primaryImage2', primaryImage2);
 
-      // Add model images
       modelImages.forEach(image => {
         formDataToSend.append('modelImages', image);
       });
       formDataToSend.append('modelImageDescriptions', JSON.stringify(modelImageDescriptions));
 
-      // Add colors
       const colorData = colors.map(({ images, ...color }) => color);
       formDataToSend.append('colors', JSON.stringify(colorData));
 
-      // Add color images
       colors.forEach((color, index) => {
         color.images.forEach((image, imgIndex) => {
           formDataToSend.append(`color_${color.name}_image${imgIndex}`, image);
@@ -257,16 +266,91 @@ export default function ProductAdminPortal() {
         setIsAddDialogOpen(false);
         fetchProducts();
       }
-    } catch (error: any) {
+    } catch (error : any) {
       showAlert(error.response?.data?.message || 'Failed to add product', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteProduct = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
 
+    try {
+      setLoading(true);
+      const formDataToSend = new FormData();
+
+      Object.keys(formData).forEach(key => {
+        if (key !== 'categoryId' && key !== 'subcategoryId' && formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      if (primaryImage1) formDataToSend.append('primaryImage1', primaryImage1);
+      if (primaryImage2) formDataToSend.append('primaryImage2', primaryImage2);
+
+      if (modelImages.length > 0) {
+        formDataToSend.append('replaceModelImages', 'true');
+        modelImages.forEach(image => {
+          formDataToSend.append('modelImages', image);
+        });
+      }
+
+      const response = await axios.patch(
+        `${API_BASE_URL}/product/edit/product/${editProduct.id}`,
+        formDataToSend,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        showAlert('Product updated successfully!', 'success');
+        resetForm();
+        setIsEditDialogOpen(false);
+        setEditProduct(null);
+        fetchProducts();
+      }
+    } catch (error : any) {
+      showAlert(error.response?.data?.message || 'Failed to update product', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openEditDialog = (product) => {
+    setEditProduct(product);
+    setFormData({
+      name: product.name || '',
+      description: product.description || '',
+      shortDescription: product.shortDescription || '',
+      originalPrice: product.originalPrice || '',
+      discountPrice: product.discountPrice || '',
+      type: product.type || '',
+      tags: product.tags || '',
+      material: product.material || '',
+      dimensions: product.dimensions || '',
+      weight: product.weight || '',
+      packageContent: product.packageContent || '',
+      care: product.care || '',
+      countryOfOrigin: product.countryOfOrigin || '',
+      manufacturerName: product.manufacturerName || '',
+      packerName: product.packerName || '',
+      importerName: product.importerName || '',
+      delivery: product.delivery || '',
+      caseOnDeliveryAvailability: product.caseOnDeliveryAvailability ? 'true' : 'false',
+      returnDetails: product.returnDetails || '',
+      categoryId: product.categoryId || '',
+      subcategoryId: '',
+      totalCount: product.totalCount || ''
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const deleteProduct = async (productId) => {
+   
     try {
       setLoading(true);
       const response = await axios.delete(`${API_BASE_URL}/product/${userId}/delete/product`, {
@@ -277,8 +361,32 @@ export default function ProductAdminPortal() {
         showAlert('Product deleted successfully!', 'success');
         fetchProducts();
       }
-    } catch (error: any) {
+    } catch (error : any) {
       showAlert(error.response?.data?.message || 'Failed to delete product', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStock = async () => {
+    if (!stockProduct || !newStock) return;
+
+    try {
+      setLoading(true);
+      const response = await axios.patch(`${API_BASE_URL}/product/update/stock`, {
+        productId: stockProduct.id,
+        newStock: parseInt(newStock)
+      });
+
+      if (response.data.success) {
+        showAlert('Stock updated successfully!', 'success');
+        setIsStockDialogOpen(false);
+        setStockProduct(null);
+        setNewStock('');
+        fetchProducts();
+      }
+    } catch (error : any) {
+      showAlert(error.response?.data?.message || 'Failed to update stock', 'error');
     } finally {
       setLoading(false);
     }
@@ -290,7 +398,7 @@ export default function ProductAdminPortal() {
       discountPrice: '', type: '', tags: '', material: '', dimensions: '',
       weight: '', packageContent: '', care: '', countryOfOrigin: '',
       manufacturerName: '', packerName: '', importerName: '', delivery: '',
-      caseOnDeliveryAvailability: 'false', returnDetails: '', categoryId: '', subcategoryId: ''
+      caseOnDeliveryAvailability: 'false', returnDetails: '', categoryId: '', subcategoryId: '', totalCount: ''
     });
     setColors([{ name: '', hex: '#000000', images: [] }]);
     setModelImages([]);
@@ -299,9 +407,15 @@ export default function ProductAdminPortal() {
     setPrimaryImage2(null);
   };
 
+  const openAddDialog = () => {
+    resetForm(); // Clear form before opening
+    setIsAddDialogOpen(true);
+  };
+
   const handleViewCategory = () => {
     router.push(`/${userId}/admin/category`);
   };
+  
   const handleOrderCategory = () => {
     router.push(`/${userId}/admin/orders`);
   };
@@ -369,13 +483,15 @@ export default function ProductAdminPortal() {
                       </Button>
 
                       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button className="flex items-center justify-center gap-2 bg-blue-800 text-white text-sm sm:text-base px-3 py-2">
+                        {/* <DialogTrigger asChild> */}
+                        <Button 
+  className="flex items-center justify-center gap-2 bg-blue-800 text-white text-sm sm:text-base px-3 py-2"
+  onClick={openAddDialog}
+>
                             <Plus className="w-4 h-4" />
                             Add Product
                           </Button>
-
-                        </DialogTrigger>
+                        {/* </DialogTrigger> */}
                         <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-4xl max-h-[90vh] overflow-y-auto bg-amber-100">
                           <DialogHeader>
                             <DialogTitle className="text-lg sm:text-xl">Add New Product</DialogTitle>
@@ -432,7 +548,7 @@ export default function ProductAdminPortal() {
                                         <SelectValue placeholder="Select category" />
                                       </SelectTrigger>
                                       <SelectContent className='bg-white'>
-                                        {categories.map((cat: any) => (
+                                        {categories.map((cat : any) => (
                                           <SelectItem key={cat.id} value={cat.id} className="text-sm">{cat.name}</SelectItem>
                                         ))}
                                       </SelectContent>
@@ -448,16 +564,20 @@ export default function ProductAdminPortal() {
                                         {subcategories?.length === 0 ? (
                                           <p className="text-xs sm:text-sm text-gray-500 px-2 py-1">No subcategories available</p>
                                         ) : (
-                                          subcategories?.map((sub: any) => (
+                                          subcategories?.map((sub : any) => (
                                             <SelectItem key={sub.id} value={sub.id} className="text-sm">
                                               {sub.name}
                                             </SelectItem>
                                           ))
                                         )}
                                       </SelectContent>
-
                                     </Select>
                                   </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label htmlFor="totalCount" className="text-sm">Initial Stock Count *</Label>
+                                  <Input id="totalCount" name="totalCount" type="number" value={formData.totalCount} onChange={handleInputChange} required className="text-sm" />
                                 </div>
                               </TabsContent>
 
@@ -537,13 +657,13 @@ export default function ProductAdminPortal() {
                                 <div className="space-y-4">
                                   <div className="space-y-2">
                                     <Label className="text-sm">Primary Image 1</Label>
-                                    <Input type="file" accept="image/*" onChange={(e: any) => setPrimaryImage1(e.target.files[0])} className="text-sm" />
+                                    <Input type="file" accept="image/*" onChange={(e : any) => setPrimaryImage1(e.target.files[0])} className="text-sm" />
                                     {primaryImage1 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage1.name}</p>}
                                   </div>
 
                                   <div className="space-y-2">
                                     <Label className="text-sm">Primary Image 2</Label>
-                                    <Input type="file" accept="image/*" onChange={(e: any) => setPrimaryImage2(e.target.files[0])} className="text-sm" />
+                                    <Input type="file" accept="image/*" onChange={(e : any) => setPrimaryImage2(e.target.files[0])} className="text-sm" />
                                     {primaryImage2 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage2.name}</p>}
                                   </div>
 
@@ -552,7 +672,7 @@ export default function ProductAdminPortal() {
                                     <Input type="file" accept="image/*" multiple onChange={(e) => handleModelImageUpload(e.target.files)} className="text-sm" />
                                     {modelImages.length > 0 && (
                                       <div className="space-y-2 mt-2">
-                                        {modelImages.map((img: any, idx: any) => (
+                                        {modelImages.map((img, idx) => (
                                           <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-gray-100 rounded">
                                             <span className="text-xs sm:text-sm flex-1 break-all">{img.name}</span>
                                             <Input
@@ -627,7 +747,7 @@ export default function ProductAdminPortal() {
                                         />
                                         {color.images.length > 0 && (
                                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                                            {color.images.map((img: any, imgIdx) => (
+                                            {color.images.map((img, imgIdx) : any => (
                                               <div key={imgIdx} className="relative p-2 bg-gray-100 rounded text-xs sm:text-sm">
                                                 <span className="truncate block">{img.name}</span>
                                                 <Button
@@ -666,8 +786,15 @@ export default function ProductAdminPortal() {
                         </DialogContent>
                       </Dialog>
                     </div>
+                  </div>
 
-
+                  <div className="mb-4">
+                    <Input
+                      placeholder="Search products by name or type..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="max-w-md"
+                    />
                   </div>
 
                   {alert.show && (
@@ -695,29 +822,31 @@ export default function ProductAdminPortal() {
                                 <TableHead className="text-xs sm:text-sm">Price</TableHead>
                                 <TableHead className="text-xs sm:text-sm hidden sm:table-cell">Discount</TableHead>
                                 <TableHead className="text-xs sm:text-sm hidden lg:table-cell">Colors</TableHead>
+                                <TableHead className="text-xs sm:text-sm">Stock</TableHead>
                                 <TableHead className="text-xs sm:text-sm hidden xl:table-cell">Orders</TableHead>
                                 <TableHead className="text-xs sm:text-sm hidden xl:table-cell">Reviews</TableHead>
                                 <TableHead className="text-xs sm:text-sm">Actions</TableHead>
+                                <TableHead className="text-xs sm:text-sm">Delete</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {loading ? (
                                 <TableRow>
-                                  <TableCell colSpan={8} className="text-center py-8">
+                                  <TableCell colSpan={10} className="text-center py-8">
                                     <div className="flex flex-col items-center justify-center gap-2 bg-gray-50">
                                       <Spinner className='text-blue-700 text-5xl'></Spinner>
                                       <p className="text-gray-600 text-xs sm:text-sm">Loading Products</p>
                                     </div>
                                   </TableCell>
                                 </TableRow>
-                              ) : products.length === 0 ? (
+                              ) : filteredProducts.length === 0 ? (
                                 <TableRow>
-                                  <TableCell colSpan={8} className="text-center py-8 text-gray-500 text-sm">
+                                  <TableCell colSpan={10} className="text-center py-8 text-gray-500 text-sm">
                                     No products found. Add your first product!
                                   </TableCell>
                                 </TableRow>
                               ) : (
-                                products.map((product) => (
+                                filteredProducts.map((product : any) => (
                                   <TableRow key={product.id}>
                                     <TableCell className="font-medium">
                                       <div className="flex items-center gap-2 sm:gap-3">
@@ -750,6 +879,23 @@ export default function ProductAdminPortal() {
                                         )}
                                       </div>
                                     </TableCell>
+                                    <TableCell>
+                                      <div className="flex flex-col gap-1">
+                                        <Badge variant="outline" className="text-xs">{product.totalCount || 0}</Badge>
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm" 
+                                          onClick={() => {
+                                            setStockProduct(product);
+                                            setNewStock(product.totalCount || '');
+                                            setIsStockDialogOpen(true);
+                                          }}
+                                          className="text-xs p-1 bg-black text-white"
+                                        >
+                                          Update
+                                        </Button>
+                                      </div>
+                                    </TableCell>
                                     <TableCell className="hidden xl:table-cell">
                                       <Badge variant="outline" className="text-xs">{product.orderCount || 0}</Badge>
                                     </TableCell>
@@ -757,7 +903,7 @@ export default function ProductAdminPortal() {
                                       <Badge variant="outline" className="text-xs">{product.reviews?.length || 0}</Badge>
                                     </TableCell>
                                     <TableCell>
-                                      <div className="flex gap-1 sm:gap-2">
+                                      <div className="flex gap-1 sm:gap-2 flex-wrap">
                                         <Dialog>
                                           <DialogTrigger asChild>
                                             <Button variant="outline" size="sm" onClick={() => setViewProduct(product)} className="p-1 sm:p-2">
@@ -801,6 +947,14 @@ export default function ProductAdminPortal() {
                                           </DialogContent>
                                         </Dialog>
                                         <Button
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => openEditDialog(product)}
+                                          className="p-1 sm:p-2 bg-blue-50"
+                                        >
+                                          <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
+                                        </Button>
+                                        <Button
                                           variant="destructive"
                                           size="sm"
                                           onClick={() => deleteProduct(product.id)}
@@ -810,6 +964,42 @@ export default function ProductAdminPortal() {
                                         </Button>
                                       </div>
                                     </TableCell>
+                                    <TableCell>
+  <Dialog>
+    <DialogTrigger asChild>
+      <Button
+        variant="destructive"
+        size="sm"
+        className="p-1 sm:p-2 text-black"
+      >
+        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+      </Button>
+    </DialogTrigger>
+    <DialogContent className="max-w-md bg-white">
+      <DialogHeader>
+        <DialogTitle>Delete Product</DialogTitle>
+        <DialogDescription>
+          Are you sure you want to delete "{product.name}"? This action cannot be undone.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="flex justify-end gap-2 mt-4">
+        <DialogTrigger asChild>
+          <Button variant="outline">
+            Cancel
+          </Button>
+        </DialogTrigger>
+        <Button
+          variant="destructive"
+          onClick={() => deleteProduct(product.id)}
+          disabled={loading}
+          className='bg-red-600'
+        >
+          {loading ? 'Deleting...' : 'Delete'}
+        </Button>
+      </div>
+    </DialogContent>
+  </Dialog>
+</TableCell>
                                   </TableRow>
                                 ))
                               )}
@@ -819,17 +1009,222 @@ export default function ProductAdminPortal() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  <Dialog open={isStockDialogOpen} onOpenChange={setIsStockDialogOpen}>
+                    <DialogContent className="max-w-md bg-white">
+                      <DialogHeader>
+                        <DialogTitle>Update Stock</DialogTitle>
+                        <DialogDescription>
+                          Update stock for: {stockProduct?.name}
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="newStock">New Stock Count</Label>
+                          <Input
+                            id="newStock"
+                            type="number"
+                            value={newStock}
+                            onChange={(e) => setNewStock(e.target.value)}
+                            placeholder="Enter new stock count"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setIsStockDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={updateStock} disabled={loading}>
+                            {loading ? 'Updating...' : 'Update Stock'}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                    <DialogContent className="max-w-[95vw] sm:max-w-[90vw] md:max-w-4xl max-h-[90vh] overflow-y-auto bg-amber-100">
+                      <DialogHeader>
+                        <DialogTitle className="text-lg sm:text-xl">Edit Product</DialogTitle>
+                        <DialogDescription className="text-sm">Update product details</DialogDescription>
+                      </DialogHeader>
+
+                      <form onSubmit={handleEditSubmit} className="space-y-4 sm:space-y-6">
+                        <Tabs defaultValue="basic" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 gap-1">
+                            <TabsTrigger value="basic" className="text-xs sm:text-sm">Basic Info</TabsTrigger>
+                            <TabsTrigger value="details" className="text-xs sm:text-sm">Details</TabsTrigger>
+                            <TabsTrigger value="images" className="text-xs sm:text-sm">Images</TabsTrigger>
+                          </TabsList>
+
+                          <TabsContent value="basic" className="space-y-4 mt-7">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-name" className="text-sm">Product Name *</Label>
+                                <Input id="edit-name" name="name" value={formData.name} onChange={handleInputChange} required className="text-sm" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-type" className="text-sm">Type</Label>
+                                <Input id="edit-type" name="type" value={formData.type} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-shortDescription" className="text-sm">Short Description</Label>
+                              <Input id="edit-shortDescription" name="shortDescription" value={formData.shortDescription} onChange={handleInputChange} className="text-sm" />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-description" className="text-sm">Full Description *</Label>
+                              <Textarea id="edit-description" name="description" value={formData.description} onChange={handleInputChange} rows={4} required className="text-sm" />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-originalPrice" className="text-sm">Original Price *</Label>
+                                <Input id="edit-originalPrice" name="originalPrice" type="number" step="0.01" value={formData.originalPrice} onChange={handleInputChange} required className="text-sm" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-discountPrice" className="text-sm">Discount Price *</Label>
+                                <Input id="edit-discountPrice" name="discountPrice" type="number" step="0.01" value={formData.discountPrice} onChange={handleInputChange} required className="text-sm" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-totalCount" className="text-sm">Stock Count *</Label>
+                              <Input id="edit-totalCount" name="totalCount" type="number" value={formData.totalCount} onChange={handleInputChange} required className="text-sm" />
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent value="details" className="space-y-4 mt-7">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-material" className="text-sm">Material</Label>
+                                <Input id="edit-material" name="material" value={formData.material} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-dimensions" className="text-sm">Dimensions</Label>
+                                <Input id="edit-dimensions" name="dimensions" value={formData.dimensions} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-weight" className="text-sm">Weight (kg)</Label>
+                                <Input id="edit-weight" name="weight" type="number" step="0.01" value={formData.weight} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-countryOfOrigin" className="text-sm">Country of Origin</Label>
+                                <Input id="edit-countryOfOrigin" name="countryOfOrigin" value={formData.countryOfOrigin} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-packageContent" className="text-sm">Package Content</Label>
+                              <Textarea id="edit-packageContent" name="packageContent" value={formData.packageContent} onChange={handleInputChange} rows={2} className="text-sm" />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-care" className="text-sm">Care Instructions</Label>
+                              <Textarea id="edit-care" name="care" value={formData.care} onChange={handleInputChange} rows={2} className="text-sm" />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-manufacturerName" className="text-sm">Manufacturer</Label>
+                                <Input id="edit-manufacturerName" name="manufacturerName" value={formData.manufacturerName} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-packerName" className="text-sm">Packer</Label>
+                                <Input id="edit-packerName" name="packerName" value={formData.packerName} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="edit-importerName" className="text-sm">Importer</Label>
+                                <Input id="edit-importerName" name="importerName" value={formData.importerName} onChange={handleInputChange} className="text-sm" />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-delivery" className="text-sm">Delivery Information</Label>
+                              <Textarea id="edit-delivery" name="delivery" value={formData.delivery} onChange={handleInputChange} rows={2} className="text-sm" />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-returnDetails" className="text-sm">Return Details</Label>
+                              <Textarea id="edit-returnDetails" name="returnDetails" value={formData.returnDetails} onChange={handleInputChange} rows={2} className="text-sm" />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="edit-caseOnDeliveryAvailability" className="text-sm">Cash on Delivery</Label>
+                              <Select value={formData.caseOnDeliveryAvailability} onValueChange={(value) => setFormData(prev => ({ ...prev, caseOnDeliveryAvailability: value }))}>
+                                <SelectTrigger className="text-sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className='bg-white'>
+                                  <SelectItem value="true" className="text-sm">Available</SelectItem>
+                                  <SelectItem value="false" className="text-sm">Not Available</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TabsContent>
+
+                          <TabsContent value="images" className="space-y-4 mt-7">
+                            <p className="text-sm text-gray-600">Upload new images to replace existing ones (optional)</p>
+                            <div className="space-y-4">
+                              <div className="space-y-2">
+                                <Label className="text-sm">Primary Image 1</Label>
+                                <Input type="file" accept="image/*" onChange={(e) => setPrimaryImage1(e.target.files[0])} className="text-sm" />
+                                {primaryImage1 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage1.name}</p>}
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label className="text-sm">Primary Image 2</Label>
+                                <Input type="file" accept="image/*" onChange={(e) => setPrimaryImage2(e.target.files[0])} className="text-sm" />
+                                {primaryImage2 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage2.name}</p>}
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label className="text-sm">Model Images (will replace all existing)</Label>
+                                <Input type="file" accept="image/*" multiple onChange={(e) => handleModelImageUpload(e.target.files)} className="text-sm" />
+                                {modelImages.length > 0 && (
+                                  <div className="space-y-2 mt-2">
+                                    {modelImages.map((img, idx) => (
+                                      <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-2 bg-gray-100 rounded">
+                                        <span className="text-xs sm:text-sm flex-1 break-all">{img.name}</span>
+                                        <Button type="button" variant="ghost" size="sm" onClick={() => removeModelImage(idx)}>
+                                          <X className="w-4 h-4" />
+                                        </Button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </TabsContent>
+                        </Tabs>
+
+                        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
+                          <Button type="button" variant="outline" className='border-red-700 text-red-900 text-sm sm:text-base' onClick={() => {
+                            setIsEditDialogOpen(false);
+                            setEditProduct(null);
+                            resetForm();
+                          }}>
+                            Cancel
+                          </Button>
+                          <Button type="submit" disabled={loading} className='bg-blue-700 text-white text-sm sm:text-base'>
+                            {loading ? 'Updating...' : 'Update Product'}
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </div>
             <div className="border-t border-gray-300 my-0"></div>
             <FooterPart></FooterPart>
           </div>
-
-
         )
       }
     </div>
-
   );
 }

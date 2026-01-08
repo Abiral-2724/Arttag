@@ -14,6 +14,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Spinner } from '@/components/ui/spinner';
 import Link from 'next/link';
+import CustomerReviewSection from '@/components/CustomerReview';
 
 const ProductDetailPage = () => {
   const [product, setProduct] : any = useState(null);
@@ -33,6 +34,7 @@ const ProductDetailPage = () => {
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const {productId} = useParams();
+  const [productName ,setProductName] = useState("")
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ; 
 
@@ -63,7 +65,7 @@ const ProductDetailPage = () => {
       
       if (data.success) {
         setProduct(data.product);
-        
+        setProductName(data.product.name)
         // Only check wishlist and cart status if user is logged in
         if (currentUserId) {
           // Check if product is in wishlist
@@ -662,7 +664,7 @@ const ProductDetailPage = () => {
           </div>
         ))}
       </div>
-
+        <CustomerReviewSection productId={productId} userId={userId} productName={productName}></CustomerReviewSection>
       <div className="border-t border-gray-300"></div>
       <Footer />
 
