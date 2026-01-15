@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Package, Grid3x3, ShoppingCart, BarChart3, Users, Settings, Menu, X, TrendingUp, TrendingDown, DollarSign, Pin, PinIcon, IndianRupeeIcon } from 'lucide-react';
+import { Package, Grid3x3, ShoppingCart, BarChart3, Users, Settings, Menu, X, TrendingUp, TrendingDown, DollarSign, Pin, PinIcon, IndianRupeeIcon, TicketSlash, Undo2 } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, Pie, PieChart, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import axios from 'axios';
@@ -37,62 +37,62 @@ export default function AdminDashboard() {
     router.push(`/${userId}/admin/orders`);
   };
 
-  useEffect(() => {
-    const checkAccess = async () => {
-      try {
-        const storedUserId = localStorage.getItem("arttagUserId");
-        const storedToken = localStorage.getItem("arttagtoken");
+  // useEffect(() => {
+  //   const checkAccess = async () => {
+  //     try {
+  //       const storedUserId = localStorage.getItem("arttagUserId");
+  //       const storedToken = localStorage.getItem("arttagtoken");
 
-        // 🔹 Instant redirect if no user or mismatch
-        if (!storedUserId || !storedToken || storedUserId !== userId) {
-          router.replace("/login");
-          return;
-        }
+  //       // 🔹 Instant redirect if no user or mismatch
+  //       if (!storedUserId || !storedToken || storedUserId !== userId) {
+  //         router.replace("/login");
+  //         return;
+  //       }
 
-        // 🔹 Verify role via backend
-        const response = await axios.get(`${API_BASE_URL}/user/${userId}/get/profile`);
+  //       // 🔹 Verify role via backend
+  //       const response = await axios.get(`${API_BASE_URL}/user/${userId}/get/profile`);
 
-        if (!response.data.success || response.data.user.role !== "ADMIN") {
-          router.replace("/login");
-          return;
-        }
+  //       if (!response.data.success || response.data.user.role !== "ADMIN") {
+  //         router.replace("/login");
+  //         return;
+  //       }
 
-      } catch (error) {
-        console.error("Error verifying user:", error);
-        router.replace("/login");
-      } finally {
-        setIsChecking(false); // ✅ stop loading only when verification is done
-      }
-    };
+  //     } catch (error) {
+  //       console.error("Error verifying user:", error);
+  //       router.replace("/login");
+  //     } finally {
+  //       setIsChecking(false); // ✅ stop loading only when verification is done
+  //     }
+  //   };
 
-    if (userId) checkAccess();
-  }, [userId, router]);
+  //   if (userId) checkAccess();
+  // }, [userId, router]);
 
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  // useEffect(() => {
+  //   fetchDashboardData();
+  // }, []);
 
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Replace with your actual API endpoint
-      const response = await fetch(`${API_BASE_URL}/product/all/website/details`);
-      const data = await response.json();
+  // const fetchDashboardData = async () => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     // Replace with your actual API endpoint
+  //     const response = await fetch(`${API_BASE_URL}/product/all/website/details`);
+  //     const data = await response.json();
 
-      if (data.success) {
-        setDashboardData(data.data);
-      } else {
-        setError(data.message || 'Failed to fetch dashboard data');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch dashboard data');
-      console.error('Error fetching dashboard data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     if (data.success) {
+  //       setDashboardData(data.data);
+  //     } else {
+  //       setError(data.message || 'Failed to fetch dashboard data');
+  //     }
+  //   } catch (err: any) {
+  //     setError(err.message || 'Failed to fetch dashboard data');
+  //     console.error('Error fetching dashboard data:', err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const calculatePercentageChange = (current, lastMonth) => {
     if (lastMonth === 0) return { value: '+100%', positive: true };
@@ -141,71 +141,71 @@ export default function AdminDashboard() {
 
   const totalOrders = orderStatusData.reduce((sum, item) => sum + item.count, 0);
 
-  if (loading) {
-    return (
-      <>
-        {
-          isChecking ? (
-            <div className="flex flex-col items-center justify-center h-screen gap-2 text-lg font-medium">
-              <Link href={'/'}>
-                <div className="flex items-center gap-2">
-                  <div className="w-auto h-14">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 270 54"
-                      className="h-full w-auto"
-                    >
-                      <defs>
-                        <style>
-                          {`
-                  .st0 {
-                    font-family: MuktaMahee-Regular, 'Mukta Mahee';
-                    font-size: 49.69px;
-                  }
-                  `}
-                        </style>
-                      </defs>
-                      <g>
-                        <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
-                        <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
-                        <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
-                      </g>
-                      <text className="st0" transform="translate(84.95 40.38)">
-                        <tspan x="0" y="0">Arttag</tspan>
-                      </text>
-                    </svg>
-                  </div>
-                </div>
-              </Link>
-              <Spinner className='text-blue-700 text-5xl'></Spinner>
-              <p className="text-gray-600 text-sm">Verifying request</p>
-            </div>) : (<div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600 font-medium">Loading dashboard data...</p>
-              </div>
-            </div>)
-        }
-      </>
+  // if (loading) {
+  //   return (
+  //     <>
+  //       {
+  //         isChecking ? (
+  //           <div className="flex flex-col items-center justify-center h-screen gap-2 text-lg font-medium">
+  //             <Link href={'/'}>
+  //               <div className="flex items-center gap-2">
+  //                 <div className="w-auto h-14">
+  //                   <svg
+  //                     xmlns="http://www.w3.org/2000/svg"
+  //                     viewBox="0 0 270 54"
+  //                     className="h-full w-auto"
+  //                   >
+  //                     <defs>
+  //                       <style>
+  //                         {`
+  //                 .st0 {
+  //                   font-family: MuktaMahee-Regular, 'Mukta Mahee';
+  //                   font-size: 49.69px;
+  //                 }
+  //                 `}
+  //                       </style>
+  //                     </defs>
+  //                     <g>
+  //                       <path d="M62.85,33.21c.11,0,.17.04.19.21.2,1.7-.04,4.05-.01,5.84,0,.44.01.95-.3,1.15-.34.21-1.72-.06-2.18-.12-14.77-1.86-19.13-21.03-6.37-28.96,3.44-2.14,5.73-2.15,9.65-2.25.57-.01,1.26,0,1.76.06-2.15,2.88-1.5,7.52,2.16,8.77,1.53.52,2.98.08,4.52.4v21.62c0,.2-.1.41-.29.49h-6.67c-.08,0-.16-.03-.22-.09-.06-.06-.09-.14-.09-.22v-20.52c0-.35-.19-.72-.24-.86-1.18-3.54-5.67-2.47-7.9-.6-4.54,3.81-3.78,11.34,1.53,14.02.34.17,1.24.75,2.41.87l2.06.2Z" />
+  //                       <path d="M68.98,16.48c-.15,0-.29-.02-.44-.05-1.63-.42-2.77-2.4-2.6-4.02.15-1.44,1.7-3.34,3.22-3.34h20.4c.15,0,.17.11.18.44v6.66c0,.08-.03.16-.09.22-.06.06-.14.09-.22.09h-20.45Z" />
+  //                       <path d="M73.96,40.29v-21.62c0-.2.1-.41.29-.49h6.67c.08,0,.16.03.22.09.06.06.09.14.09.22v18.21c.03.76-.62,1.51-.8,1.75-1.53,2.1-4.13,2.17-6.49,1.83Z" />
+  //                     </g>
+  //                     <text className="st0" transform="translate(84.95 40.38)">
+  //                       <tspan x="0" y="0">Arttag</tspan>
+  //                     </text>
+  //                   </svg>
+  //                 </div>
+  //               </div>
+  //             </Link>
+  //             <Spinner className='text-blue-700 text-5xl'></Spinner>
+  //             <p className="text-gray-600 text-sm">Verifying request</p>
+  //           </div>) : (<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  //             <div className="text-center">
+  //               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+  //               <p className="text-gray-600 font-medium">Loading dashboard data...</p>
+  //             </div>
+  //           </div>)
+  //       }
+  //     </>
 
 
-    );
-  }
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertDescription>
-            {error}
-            <Button onClick={fetchDashboardData} className="mt-4 w-full">
-              Retry
-            </Button>
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+  //       <Alert variant="destructive" className="max-w-md">
+  //         <AlertDescription>
+  //           {error}
+  //           <Button onClick={fetchDashboardData} className="mt-4 w-full">
+  //             Retry
+  //           </Button>
+  //         </AlertDescription>
+  //       </Alert>
+  //     </div>
+  //   );
+  // }
 
   const stats = [
     {
@@ -251,6 +251,15 @@ export default function AdminDashboard() {
   const handleviewcoupens = () => {
     router.push(`/${userId}/admin/coupens`);
   };
+  const handleviewrefundRequest = () => {
+    router.push(`/${userId}/admin/refund`);
+  };
+
+  const handleviewreturnRequest = () => {
+    router.push(`/${userId}/admin/return`);
+  };
+
+
 
   const navigationItems = [
     { id: 'products', label: 'View Products', icon: Package, description: 'Manage your product catalog', color: 'blue', function: handleViewproduct },
@@ -258,6 +267,8 @@ export default function AdminDashboard() {
     { id: 'orders', label: 'View Orders', icon: ShoppingCart, description: 'Track and manage orders', color: 'orange', function: handleviewOrder },
     { id: 'pincodes', label: 'View Pincode', icon: PinIcon, description: 'Track and manage pincode', color: 'green', function: handleviewpincode },
     { id: 'coupens', label: 'View Coupens', icon: IndianRupeeIcon, description: 'Track and manage Coupen', color: 'blue', function: handleviewcoupens },
+    { id: 'refunds', label: 'View Refunds Request', icon: TicketSlash, description: 'Track and manage Refund request', color: 'red', function: handleviewrefundRequest },
+    { id: 'returns', label: 'View Returns Request', icon: Undo2, description: 'Track and manage Return request', color: 'blue', function: handleviewreturnRequest },
   ];
 
   const handleclickhome = () => {

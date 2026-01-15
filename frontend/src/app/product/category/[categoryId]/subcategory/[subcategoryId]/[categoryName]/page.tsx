@@ -88,6 +88,7 @@ const SubcategoryProductsPage = () => {
       }
     } catch (error) {
       console.error('Error fetching types:', error);
+      setError('Failed to load product types. Please try again.');
     }
   };
 

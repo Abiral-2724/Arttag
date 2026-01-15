@@ -30,12 +30,12 @@ export default function ProductAdminPortal() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [viewProduct, setViewProduct] = useState(null);
   const [isChecking, setIsChecking] = useState(true);
-  const [editProduct, setEditProduct] = useState(null);
+  const [editProduct, setEditProduct] : any = useState(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isStockDialogOpen, setIsStockDialogOpen] = useState(false);
-  const [stockProduct, setStockProduct] = useState(null);
+  const [stockProduct, setStockProduct] : any = useState(null);
   const [newStock, setNewStock] = useState('');
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -69,8 +69,8 @@ export default function ProductAdminPortal() {
   const [colors, setColors] = useState([{ name: '', hex: '#000000', images: [] }]);
   const [modelImages, setModelImages] : any = useState([]);
   const [modelImageDescriptions, setModelImageDescriptions] : any = useState([]);
-  const [primaryImage1, setPrimaryImage1] = useState(null);
-  const [primaryImage2, setPrimaryImage2] = useState(null);
+  const [primaryImage1, setPrimaryImage1] : any = useState(null);
+  const [primaryImage2, setPrimaryImage2] : any = useState(null);
 
   useEffect(() => {
     const checkAccess = async () => {
@@ -127,6 +127,7 @@ export default function ProductAdminPortal() {
         setFilteredProducts(response.data.data);
       }
     } catch (error) {
+      console.log('error product = ', error)
       showAlert('Failed to fetch products', 'error');
     } finally {
       setLoading(false);
@@ -349,7 +350,7 @@ export default function ProductAdminPortal() {
     setIsEditDialogOpen(true);
   };
 
-  const deleteProduct = async (productId) => {
+  const deleteProduct = async (productId : any) => {
    
     try {
       setLoading(true);
@@ -747,7 +748,7 @@ export default function ProductAdminPortal() {
                                         />
                                         {color.images.length > 0 && (
                                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                                            {color.images.map((img, imgIdx) : any => (
+                                            {color.images.map((img : any, imgIdx : any) : any => (
                                               <div key={imgIdx} className="relative p-2 bg-gray-100 rounded text-xs sm:text-sm">
                                                 <span className="truncate block">{img.name}</span>
                                                 <Button
@@ -1172,13 +1173,13 @@ export default function ProductAdminPortal() {
                             <div className="space-y-4">
                               <div className="space-y-2">
                                 <Label className="text-sm">Primary Image 1</Label>
-                                <Input type="file" accept="image/*" onChange={(e) => setPrimaryImage1(e.target.files[0])} className="text-sm" />
+                                <Input type="file" accept="image/*" onChange={(e : any) => setPrimaryImage1(e.target.files[0])} className="text-sm" />
                                 {primaryImage1 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage1.name}</p>}
                               </div>
 
                               <div className="space-y-2">
                                 <Label className="text-sm">Primary Image 2</Label>
-                                <Input type="file" accept="image/*" onChange={(e) => setPrimaryImage2(e.target.files[0])} className="text-sm" />
+                                <Input type="file" accept="image/*" onChange={(e : any) => setPrimaryImage2(e.target.files[0])} className="text-sm" />
                                 {primaryImage2 && <p className="text-xs sm:text-sm text-gray-600">{primaryImage2.name}</p>}
                               </div>
 

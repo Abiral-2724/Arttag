@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import { User, Package, MapPin, Heart, LogOut, ChevronRight, Loader2, CheckCircle2, UserRoundPen } from 'lucide-react';
+import { User, Package, MapPin, Heart, LogOut, ChevronRight, CheckCircle2, RefreshCw } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useParams, useRouter } from 'next/navigation';
@@ -12,26 +12,20 @@ import WishlistSection from '@/components/WishlistSection';
 import LogoutSection from '@/components/LogoutSection';
 import Link from 'next/link';
 import { Spinner } from '@/components/ui/spinner';
-import { Button } from '@/components/ui/button';
 import FooterPart from '@/components/FooterPart';
-
-// import PersonalInfoSection from './components/PersonalInfoSection';
-// import AddressSection from './components/AddressSection';
-// import OrderSection from './components/OrderSection';
-// import WishlistSection from './components/WishlistSection';
-// import LogoutSection from './components/LogoutSection';
+import ReturnSection from '@/components/Return';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function ProfilePage() {
   const { userId } = useParams();
   const router = useRouter();
+  
   useEffect(() => {
     if (localStorage.getItem("arttagUserId")) {
       if (localStorage.getItem("arttagUserId") !== userId) {
         if (localStorage.getItem("arttagUserId")) {
           localStorage.removeItem("arttagUserId")
-
         }
         if (localStorage.getItem("arttagtoken")) {
           localStorage.removeItem("arttagtoken")
@@ -48,6 +42,7 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [returns, setReturns] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
   const [alert, setAlert]: any = useState(null);
 
@@ -61,7 +56,8 @@ export default function ProfilePage() {
       fetchUserData(),
       fetchOrders(),
       fetchAddresses(),
-      fetchWishlist()
+      fetchWishlist(),
+      fetchReturns()
     ]);
     setPageLoading(false);
   };
@@ -108,10 +104,22 @@ export default function ProfilePage() {
     }
   };
 
+  const fetchReturns = async () => {
+    try {
+      const { data } = await axios.get(`${API_BASE_URL}/return/get/user/${userId}/return`);
+      console.log('return ka data mila kya')
+      console.log(data)
+      if (data.returns) setReturns(data.returns);
+    } catch (error) {
+      console.error('Error fetching returns:', error);
+    }
+  };
+
   const menuItems = [
     { id: 'personal', label: 'Personal Information', icon: User },
     { id: 'address', label: 'Address Book', icon: MapPin },
-    { id: 'order', label: 'Order', icon: Package },
+    { id: 'order', label: 'Orders', icon: Package },
+    { id: 'returns', label: 'Returns', icon: RefreshCw },
     { id: 'wishlist', label: 'Wishlist', icon: Heart },
     { id: 'logout', label: 'Logout', icon: LogOut }
   ];
@@ -153,7 +161,7 @@ export default function ProfilePage() {
         <div className='flex flex-col items-center gap-2'>
           <div className='flex items-center gap-2'>
             <p className="text-gray-600 text-sm">Loading your profile</p>
-            <UserRoundPen className="w-5 h-5 text-gray-600" />
+            <User className="w-5 h-5 text-gray-600" />
           </div>
 
           <Spinner className='text-blue-700 text-5xl' />
@@ -164,7 +172,6 @@ export default function ProfilePage() {
 
   return (
     <div>
-
       <div className="min-h-screen bg-gray-50">
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-0 py-3">
@@ -198,9 +205,7 @@ export default function ProfilePage() {
                     </svg>
                   </div>
                 </div>
-
               </Link>
-
             </div>
           </div>
         </div>
@@ -275,6 +280,15 @@ export default function ProfilePage() {
                   />
                 )}
 
+                {activeSection === 'returns' && (
+                  <ReturnSection
+                    returns={returns}
+                    userId={userId}
+                    onUpdate={fetchReturns}
+                    showAlert={showAlert}
+                  />
+                )}
+
                 {activeSection === 'wishlist' && (
                   <WishlistSection
                     wishlist={wishlist}
@@ -293,12 +307,10 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-
       </div>
 
       <div className="border-t border-gray-300 my-0"></div>
       <FooterPart></FooterPart>
     </div>
-
   );
 }

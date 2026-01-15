@@ -26,9 +26,9 @@ const navItems = [
     name: 'BAGS & WALLETS',
     items: [
       { name: 'Backpacks', link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0/subcategory/14e1bb91-105f-49c5-9a30-0ed73dcbec64/BAGS%20&%20WALLETS' },
-      { name: 'Wallets', link: '/product/category/e60bc235-8d04-4c31-b229-ba3a71f25fb0/subcategory/f3c079fc-1321-461b-bf04-a747c8497745/BAGS%20&%20WALLETS' },
+      { name: 'Wallets', link: '/product/category/6be4fe65-560d-4c66-8aa8-e5a478e02632/subcategory/6e059067-a2f9-4879-918f-a8c32ca1b1ab/BAGS%20&%20WALLETS' },
     ],
-    id: "e60bc235-8d04-4c31-b229-ba3a71f25fb0"
+    id: "6be4fe65-560d-4c66-8aa8-e5a478e02632"
   },
   {
     name: 'WORK ESSENTIALS',
@@ -40,11 +40,11 @@ const navItems = [
   {
     name: 'SHOP BY APPLE',
     items: [
-      { name: 'Phone', link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135/subcategory/387f9538-2286-44fd-a5b5-fd87ea383629/SHOP%20BY%20APPLE' },
+      { name: 'Phone', link: '/product/category/8b644ef9-42ee-4c92-9106-f5d413e3929d/subcategory/180e2b41-1a10-4eb1-a385-70b176f81a02/SHOP%20BY%20APPLE' },
       { name: 'Iphone', link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135/subcategory/8eaf3dad-86bf-49fd-af56-7e2a0b96ac63/SHOP%20BY%20APPLE' },
       { name: 'MackBook', link: '/product/category/6578853f-a315-4c27-acd2-d1ca33f55135/subcategory/42fa8c63-45c0-48b5-8bf4-049d37ca55aa/SHOP%20BY%20APPLE' }
     ],
-    id: "6578853f-a315-4c27-acd2-d1ca33f55135"
+    id: "8b644ef9-42ee-4c92-9106-f5d413e3929d"
   },
 ];
 
