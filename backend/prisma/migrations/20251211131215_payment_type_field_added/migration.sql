@@ -1,5 +1,0 @@
--- CreateEnum
-CREATE TYPE "PaymentType" AS ENUM ('CASEONDELIVERY', 'PHONEPAY', 'UPI', 'DEBITCARD', 'CREDITCARD', 'PAYTM', 'NETBANKING');
-
--- AlterTable
-ALTER TABLE "Orders" ADD COLUMN     "paymentType" "PaymentType" NOT NULL DEFAULT 'CASEONDELIVERY';

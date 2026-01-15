@@ -291,7 +291,7 @@ export const getAllProduct = async (req, res) => {
         colors: true,
         reviews: true,
         wishlists: true,
-        orders: {
+        orderItems: {
           select: {
             id: true,
           },
@@ -305,7 +305,7 @@ export const getAllProduct = async (req, res) => {
     // Add order count for each product
     const formattedProducts = products.map((product) => ({
       ...product,
-      orderCount: product.orders.length,
+      orderCount: product.orderItems.length,
     }));
 
     return res.status(200).json({

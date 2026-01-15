@@ -10,6 +10,8 @@ import cartRoute from './routes/cart.routes.js'
 import orderRoute from './routes/order.routes.js'
 import coupenRoute from './routes/coupen.routes.js'
 import reviewRoute from './routes/customerReview.routes.js'
+import paymentRoute from './routes/payment.routes.js'
+import returnRoute from './routes/return.routes.js'
 const app = express() ; 
 
 dotenv.config({}) ; 
@@ -28,7 +30,9 @@ app.use(express.urlencoded({extended : true})) ;
 const allowedOrigins = [
     "https://www.arttag.in",
     "https://ecommerce-two-teal-40.vercel.app",
-    "http://localhost:3000"
+    "http://localhost:3000" ,
+    'http://localhost:7071',
+     'https://checkout.razorpay.com'
   ];
 
   const corsOptions = {
@@ -62,6 +66,10 @@ app.use('/api/v1/order' ,orderRoute);
 app.use('/api/v1/coupen' ,coupenRoute);
 
 app.use('/api/v1/review' ,reviewRoute)
+
+app.use('/api/v1/payment' , paymentRoute)
+
+app.use('/api/v1/return' ,returnRoute)
 
 app.listen(PORT ,() => {
     console.log(`Server running at ${PORT}`) ; 

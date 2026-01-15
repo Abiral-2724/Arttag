@@ -18,23 +18,23 @@ enum Role {
 //   MODEL
 // }
 
-enum OrderStatus {
-  PENDING
-  CONFIRMED
-  PROCESSING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-  RETURNED
-}
+// enum OrderStatus {
+//   PENDING
+//   CONFIRMED
+//   PROCESSING
+//   SHIPPED
+//   DELIVERED
+//   CANCELLED
+//   RETURNED
+// }
 
-enum PaymentStatus {
-  PENDING
-  PAID
-  FAILED
-  REFUNDED
-  PARTIALLY_REFUNDED
-}
+// enum PaymentStatus {
+//   PENDING
+//   PAID
+//   FAILED
+//   REFUNDED
+//   PARTIALLY_REFUNDED
+// }
 
 enum PaymentType {
   CASEONDELIVERY 
@@ -59,8 +59,9 @@ model User {
   wishlists Wishlist[]
   reviews   Review[]
   carts     CartItems[]
-  orders    Orders[]
   review customerReview[]
+  orders Order[]
+  returns Return[]
 }
 
 model Address {
@@ -125,9 +126,10 @@ model Product {
   reviews   Review[]
   images    ProductImages[]
   cart      CartItems[]
-  orders    OrderItem[]
   colors    ProductColor[]
   review    customerReview[]
+   orderItems OrderItem[]
+   returns Return[]
 }
 
 model ProductColor {
@@ -166,13 +168,13 @@ model Review {
   id        String   @id @default(uuid())
   productId String
   userId    String
-  orderId   String
+  
   rating    Int
   createdAt DateTime @default(now())
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  order   Orders  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+ 
 }
 
 model CartItems {
@@ -221,36 +223,151 @@ model customerReview {
   createdAt   DateTime @default(now())
 }
 
-model Orders {
-  id             String        @id @default(uuid())
-  orderNumber    String        @unique
-  userId         String
-  status         OrderStatus   @default(PENDING)
-  paymentStatus  PaymentStatus @default(PENDING)
-  paymentType   PaymentType @default(CASEONDELIVERY)
-  subtotal       Int
-  discountAmount Int           @default(0)
-  shippingCharge Int           @default(0)
-  taxAmount      Int           @default(0)
-  totalAmount    Int
-  addressId      String        @default("")
-  createdAt      DateTime      @default(now())
+// will need to delete Orders and OrderItem
 
-  // Relations
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+// model Orders {
+//   id             String        @id @default(uuid())
+//   orderNumber    String        @unique
+//   userId         String
+//   status         OrderStatus   @default(PENDING)
+//   paymentStatus  PaymentStatus @default(PENDING)
+//   paymentType   PaymentType @default(CASEONDELIVERY)
+//   subtotal       Int
+//   discountAmount Int           @default(0)
+//   shippingCharge Int           @default(0)
+//   taxAmount      Int           @default(0)
+//   totalAmount    Int
+//   addressId      String        @default("")
+//   createdAt      DateTime      @default(now())
+
+//   // Relations
+//   user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   items   OrderItem[]
+//   reviews Review[]
+// }
+
+// model OrderItem {
+//   id         String @id @default(uuid())
+//   orderId    String
+//   productId  String
+//   price      Int
+//   discount   Int
+//   finalPrice Int
+//   quantity   Int
+
+//   order   Orders  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+//   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+// }
+
+// new model 
+enum PaymentMethod {
+  ONLINE
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum OrderStatus {
+  CREATED
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id              String   @id @default(uuid())
+  userId          String
+  totalAmount     Int
+  paymentMethod   PaymentMethod
+  paymentStatus   PaymentStatus
+  orderStatus     OrderStatus
+  razorpayOrderId String?
+  deliveryDate DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+user User @relation(fields: [userId] ,references: [id])
+  payment Payment?
   items   OrderItem[]
-  reviews Review[]
+  refunds Refund[]
+  returns Return[]
 }
 
 model OrderItem {
-  id         String @id @default(uuid())
-  orderId    String
-  productId  String
-  price      Int
-  discount   Int
-  finalPrice Int
-  quantity   Int
+  id           String @id @default(uuid())
+  orderId      String
+  productId    String
+  quantity     Int
+  price        Int
+  isReturnable Boolean
+  returnStatus ReturnStatus?
 
-  order   Orders  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
+
+
+
+model Payment {
+  id                 String   @id @default(uuid())
+  orderId            String   @unique
+  razorpayOrderId    String? @unique
+  razorpayPaymentId  String?
+  razorpaySignature  String?
+  amount             Int
+  currency           String
+  status             PaymentStatus
+  createdAt          DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+model Refund {
+  id               String   @id @default(uuid())
+  orderId          String
+  paymentId        String
+  razorpayRefundId String?
+  amount           Int
+  reason           String
+  status           RefundStatus
+  createdAt        DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id])
+}
+
+enum RefundStatus {
+  INITIATED
+  PROCESSED
+  FAILED
+  REFUNDED
+}
+
+model Return {
+   id  String   @id @default(uuid())
+   productId String 
+   orderId String
+   userId String
+   reason String
+  amount Int
+  status ReturnStatus
+  createdAt        DateTime @default(now())
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum ReturnStatus {
+  REQUESTED
+  REJECTED
+  APPROVED
+  PICKED
+  REFUNDED
+}
+
