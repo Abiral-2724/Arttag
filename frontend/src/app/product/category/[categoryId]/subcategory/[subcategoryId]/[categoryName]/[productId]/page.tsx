@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Check, Gift, Tag, Package, CreditCard, RotateCcw, Heart, Loader2, Share2, X, Copy, Check as CheckIcon } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -16,7 +16,24 @@ import { Spinner } from '@/components/ui/spinner';
 import Link from 'next/link';
 import CustomerReviewSection from '@/components/CustomerReview';
 
+interface Subcategory {
+  id: string;
+  name: string;
+  imageUrl: string;
+  parentId: string;
+  createdAt: string;
+}
+
+interface SubcategoriesResponse {
+  success: boolean;
+  message: string;
+  subcategories: Subcategory[];
+}
+
 const ProductDetailPage = () => {
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const topCategorySliderRef = useRef<HTMLDivElement>(null);
+  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [product, setProduct] : any = useState(null);
   const [selectedColor, setSelectedColor] : any = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -37,6 +54,54 @@ const ProductDetailPage = () => {
   const [productName ,setProductName] = useState("")
   const router = useRouter();
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ; 
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+useEffect(() => {
+  fetchSubcategories();
+}, []);
+
+
+// Function to fetch subcategories from API
+const fetchSubcategories = async () => {
+  setIsLoadingCategories(true);
+  try {
+    const response = await fetch(`${API_BASE}/category/get/all/subcategory`);
+    const data: SubcategoriesResponse = await response.json();
+    if (data.success) {
+      setSubcategories(data.subcategories);
+    }
+  } catch (error) {
+    console.error('Failed to fetch subcategories:', error);
+  } finally {
+    setIsLoadingCategories(false);
+  }
+};
+
+// Function to scroll the slider left or right
+const scrollSlider = (direction: 'left' | 'right', sliderRef: React.RefObject<HTMLDivElement>) => {
+  if (sliderRef.current) {
+    const scrollAmount = 300;
+    const newScrollLeft = direction === 'left'
+      ? sliderRef.current.scrollLeft - scrollAmount
+      : sliderRef.current.scrollLeft + scrollAmount;
+
+    sliderRef.current.scrollTo({
+      left: newScrollLeft,
+      behavior: 'smooth'
+    });
+  }
+};
+
+// Function to handle category click and navigate to subcategory page
+const handleCategoryClick = (subcategory: Subcategory) => {
+  const categoryId = subcategory.parentId;
+  const subcategoryId = subcategory.id;
+  const subcategoryName = subcategory.name.toLowerCase().replace(/\s+/g, '-');
+
+  window.location.href = `/product/category/${categoryId}/subcategory/${subcategoryId}/${subcategoryName}`;
+};
+
 
 
   useEffect(() => {
@@ -361,6 +426,10 @@ const ProductDetailPage = () => {
     );
   }
 
+
+
+
+
   const images = getCurrentImages();
   const discount = Math.round(((product.originalPrice - product.discountPrice) / product.originalPrice) * 100);
 
@@ -664,6 +733,73 @@ const ProductDetailPage = () => {
           </div>
         ))}
       </div>
+
+{/* Top Categories Section - Enhanced */}
+<div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 py-8 sm:py-12 md:py-16">
+  <h2 className="text-xl sm:text-2xl md:text-[25px] font-sans ml-2 sm:ml-3 md:ml-5 text-black mb-6 sm:mb-8 tracking-tight ">
+    Top Product
+  </h2>
+
+  {isLoadingCategories ? (
+    <div className="flex justify-center items-center py-20">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-black mx-auto"></div>
+        <p className="mt-6 text-gray-600 text-lg">Loading categories...</p>
+      </div>
+    </div>
+  ) : (
+    <div className="relative group">
+      {/* Left Arrow */}
+      <button
+        onClick={() => scrollSlider('left', topCategorySliderRef)}
+        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 -translate-x-2 hover:scale-110 border border-gray-200"
+        aria-label="Scroll left"
+      >
+        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+      </button>
+
+      {/* Slider Container */}
+      <div
+        ref={topCategorySliderRef}
+        className="flex gap-4 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-hide scroll-smooth pb-4"
+        style={{
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+        }}
+      >
+        {subcategories.map((category) => (
+          <div
+            key={category.id}
+            onClick={() => handleCategoryClick(category)}
+            className="flex-shrink-0 w-28 sm:w-32 md:w-36 flex flex-col items-center cursor-pointer group/item"
+          >
+            <div className="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full overflow-hidden mb-3 sm:mb-4 group-hover/item:shadow-2xl transition-all duration-300 ring-2 ring-transparent group-hover/item:ring-black group-hover/item:ring-offset-4">
+              <img
+                src={category.imageUrl}
+                alt={category.name}
+                className="w-full h-full object-cover group-hover/item:scale-110 transition-transform duration-500"
+              />
+            </div>
+            <span className="text-xs sm:text-sm md:text-base font-semibold text-gray-900 text-center leading-tight px-2 group-hover/item:text-black transition-colors">
+              {category.name}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Right Arrow */}
+      <button
+        onClick={() => scrollSlider('right', topCategorySliderRef)}
+        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-xl rounded-full p-3 sm:p-4 hover:bg-black hover:text-white transition-all opacity-0 group-hover:opacity-100 translate-x-2 hover:scale-110 border border-gray-200"
+        aria-label="Scroll right"
+      >
+        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+      </button>
+    </div>
+  )}
+</div>
+
+
         <CustomerReviewSection productId={productId} userId={userId} productName={productName}></CustomerReviewSection>
       <div className="border-t border-gray-300"></div>
       <Footer />

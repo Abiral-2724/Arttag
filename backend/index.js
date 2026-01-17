@@ -32,7 +32,8 @@ const allowedOrigins = [
     "https://ecommerce-two-teal-40.vercel.app",
     "http://localhost:3000" ,
     'http://localhost:7071',
-     'https://checkout.razorpay.com'
+     'https://checkout.razorpay.com',
+     'https://arttag.vercel.app'
   ];
 
   const corsOptions = {

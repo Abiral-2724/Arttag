@@ -403,6 +403,7 @@ export default function DailyObjectsReplica() {
          
         </div>
 
+
         {/* Mobile Slider */}
         <div className="sm:hidden relative">
           <div className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory">
