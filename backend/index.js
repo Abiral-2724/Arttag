@@ -73,6 +73,14 @@ app.use('/api/v1/payment' , paymentRoute)
 
 app.use('/api/v1/return' ,returnRoute)
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Backend is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
 app.listen(PORT ,'0.0.0.0',() => {
     console.log(`Server running at ${PORT}`) ; 
 })
