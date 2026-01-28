@@ -33,7 +33,8 @@ const allowedOrigins = [
     "http://localhost:3000" ,
     'http://localhost:7071',
      'https://checkout.razorpay.com',
-     'https://arttag.vercel.app'
+     'https://arttag.vercel.app',
+     'https://arttag.in'
   ];
 
   const corsOptions = {
@@ -72,6 +73,6 @@ app.use('/api/v1/payment' , paymentRoute)
 
 app.use('/api/v1/return' ,returnRoute)
 
-app.listen(PORT ,() => {
+app.listen(PORT ,'0.0.0.0',() => {
     console.log(`Server running at ${PORT}`) ; 
 })
