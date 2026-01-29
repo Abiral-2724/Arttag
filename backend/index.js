@@ -28,13 +28,14 @@ app.use(express.urlencoded({extended : true})) ;
 // };
 
 const allowedOrigins = [
+   'https://arttag.in',
     "https://www.arttag.in",
     "https://ecommerce-two-teal-40.vercel.app",
     "http://localhost:3000" ,
     'http://localhost:7071',
      'https://checkout.razorpay.com',
      'https://arttag.vercel.app',
-     'https://arttag.in'
+    
   ];
 
   const corsOptions = {
