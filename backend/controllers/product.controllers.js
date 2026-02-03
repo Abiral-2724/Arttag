@@ -53,7 +53,8 @@ export const addProduct = async (req, res) => {
         caseOnDeliveryAvailability,
         returnDetails,
         colors,
-        modelImageDescriptions
+        modelImageDescriptions ,
+        totalCount
       } = req.body;
   
       
@@ -117,56 +118,81 @@ export const addProduct = async (req, res) => {
           delivery, caseOnDeliveryAvailability: caseOnDeliveryAvailability === "true",
           returnDetails, 
           categoryId: categoryId,
-          primaryImage1, primaryImage2
+          primaryImage1, primaryImage2 ,
+          totalCount  : Number(totalCount)
         }
       });
 
-      const parsedDescriptions = typeof modelImageDescriptions === "string" ? JSON.parse(modelImageDescriptions) : modelImageDescriptions || [];
+      
+      const parsedDescriptions =
+  typeof modelImageDescriptions === "string"
+    ? JSON.parse(modelImageDescriptions)
+    : modelImageDescriptions || [];
 
-      const modelImageFiles = req.files.filter(f => f.fieldname === 'modelImages');
-for (let i = 0; i < modelImageFiles.length; i++) {
-  const file = modelImageFiles[i];
+// Upload model images in parallel
+const modelImageFiles = req.files.filter(f => f.fieldname === "modelImages");
+
+const modelImageUploads = modelImageFiles.map(async (file, i) => {
   const result = await cloudinary.uploader.upload(
-    `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
     { folder: "project_files", resource_type: "auto" }
   );
-  await client.productImages.create({
-    data: {
-      url: result.secure_url,
-      altText: file.originalname,
-      description: parsedDescriptions[i] || "Model Image",
-      productId: product.id
-    }
+
+  return {
+    url: result.secure_url,
+    altText: file.originalname,
+    description: parsedDescriptions[i] || "Model Image",
+    productId: product.id
+  };
+});
+
+const modelImageData = await Promise.all(modelImageUploads);
+
+if (modelImageData.length > 0) {
+  await client.productImages.createMany({
+    data: modelImageData
   });
 }
 
-      const parsedColors = typeof colors === "string" ? JSON.parse(colors) : colors;
-      for (const color of parsedColors) {
-        const colorFiles = req.files.filter(f => f.fieldname.startsWith(`color_${color.name}_image`));
-        const colorImages = [];
-        for (const file of colorFiles) {
-          const result = await cloudinary.uploader.upload(
-            `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-            { folder: "project_files", resource_type: "auto" }
-          );
-          colorImages.push(result.secure_url);
-        }
-      
-        await client.productColor.create({
-          data: {
-            name: color.name,
-            hex: color.hex,
-            productId: product.id,
-            colorImage1: colorImages[0] || null,
-            colorImage2: colorImages[1] || null,
-            colorImage3: colorImages[2] || null,
-            colorImage4: colorImages[3] || null,
-            colorImage5: colorImages[4] || null
-          }
-        });
-      }
 
-   
+const parsedColors =
+typeof colors === "string" ? JSON.parse(colors) : colors || [];
+
+// Upload colors in parallel
+const colorUploads = parsedColors.map(async (color) => {
+const colorFiles = req.files.filter(f =>
+  f.fieldname.startsWith(`color_${color.name}_image`)
+);
+
+const uploadPromises = colorFiles.map(file =>
+  cloudinary.uploader.upload(
+    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
+    { folder: "project_files", resource_type: "auto" }
+  )
+);
+
+const uploadResults = await Promise.all(uploadPromises);
+const images = uploadResults.map(r => r.secure_url);
+
+return {
+  name: color.name,
+  hex: color.hex,
+  productId: product.id,
+  colorImage1: images[0] || null,
+  colorImage2: images[1] || null,
+  colorImage3: images[2] || null,
+  colorImage4: images[3] || null,
+  colorImage5: images[4] || null
+};
+});
+
+const colorData = await Promise.all(colorUploads);
+
+if (colorData.length > 0) {
+await client.productColor.createMany({
+  data: colorData
+});
+}
 
       const fullProduct = await client.product.findUnique({
         where: { id: product.id },
