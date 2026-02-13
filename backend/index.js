@@ -12,6 +12,9 @@ import coupenRoute from './routes/coupen.routes.js'
 import reviewRoute from './routes/customerReview.routes.js'
 import paymentRoute from './routes/payment.routes.js'
 import returnRoute from './routes/return.routes.js'
+import storeRoute from './routes/store.routes.js'
+import corporateRoute from './routes/corporate.routes.js'
+import blogRoute from './routes/blog.routes.js'
 const app = express() ; 
 
 dotenv.config({}) ; 
@@ -73,6 +76,12 @@ app.use('/api/v1/review' ,reviewRoute)
 app.use('/api/v1/payment' , paymentRoute)
 
 app.use('/api/v1/return' ,returnRoute)
+
+app.use('/api/v1/store' ,storeRoute) ; 
+
+app.use('/api/v1/corporate' ,corporateRoute) ; 
+
+app.use('/api/v1/blog' ,blogRoute)
 
 app.get('/health', (req, res) => {
   res.status(200).json({ 

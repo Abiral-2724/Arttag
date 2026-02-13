@@ -525,14 +525,18 @@ export const getProductBySpecificType = async (req, res) => {
         distinct: ["type"], // ensures unique types
         select: {
           type: true,
-          primaryImage1: true, // pick one image per type
+          primaryImage1: true,
+          name : true ,
+          originalPrice:true ,
+          discountPrice : true ,
+           // pick one image per type
         },
       });
       
       // Transform into array of { type, image }
       const typesWithImage = products
         .filter(p => p.type) // remove null types
-        .map(p => ({ type: p.type, image: p.primaryImage1 }));
+        .map(p => ({ type: p.type, image: p.primaryImage1 , }));
       
 
       const subcategorydetail = await client.category.findFirst({
@@ -541,7 +545,7 @@ export const getProductBySpecificType = async (req, res) => {
         }
       })
   
-      
+      console.log(subcategorydetail)
       // 4️⃣ Return response
       return res.status(200).json({
         success: true,
