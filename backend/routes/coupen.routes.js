@@ -1,5 +1,5 @@
 import express from 'express' 
-import { addCoupenCode, addPincode, applyCoupenCode, checkPincode, getAllCoupens, getAllPincode } from '../controllers/coupens.controllers.js';
+import { addBulkPincodes, addCoupenCode, addPincode, applyCoupenCode, checkPincode, deletePincode, getAllCoupens, getAllPincode } from '../controllers/coupens.controllers.js';
 
 const router = express.Router() ; 
 
@@ -9,6 +9,9 @@ router.post('/apply/coupen' ,applyCoupenCode)
 
 router.post('/add/pincode' , addPincode) 
 router.post('/check/pincode' ,checkPincode)
+
+router.delete('/pincode/:id', deletePincode);
+router.post('/pincode/bulk', addBulkPincodes);
 
 router.get('/all/coupens' , getAllCoupens) ; 
 

@@ -104,6 +104,8 @@ model Product {
   description                String
   shortDescription           String?
   material                   String
+  highlights        String?
+  keyFeatures       String?
   dimensions                 String
   weight                     Decimal
   packageContent             String

@@ -11,208 +11,127 @@ dotenv.config({});
 
 
 export const addProduct = async (req, res) => {
-    try {
-      const userId = req.params.userId;
-        const categoryId = req.params.categoryId
-      // 1️⃣ Check user
-      const user = await client.user.findFirst({ where: { id: userId } });
-      if (!user) {
+  try {
+    const { userId, categoryId } = req.params;
 
-        return res.status(400).json({
-          success: false,
-          message: "No user exists with this ID",
-        });
-      }
-  
-      if (user.role === "USER") {
-        return res.status(403).json({
-          success: false,
-          message: "You have no right to add a product",
-        });
-      }
-  
-      // 2️⃣ Extract and validate fields
-      const {
-        name,
-        description,
-        shortDescription,
-        originalPrice,
-        discountPrice,
-        type,
-        tags ,
-        material,
-        dimensions,
-        weight,
-        packageContent,
-        care,
-        countryOfOrigin,
-        manufacturerName,
-        packerName,
-        importerName,
-        delivery,
-        caseOnDeliveryAvailability,
-        returnDetails,
-        colors,
-        modelImageDescriptions ,
-        totalCount
-      } = req.body;
-  
-      
-      if (
-        !name ||
-        !description ||
-        !originalPrice ||
-        !discountPrice ||
-        !material ||
-        !dimensions ||
-        !weight ||
-        !packageContent ||
-        !care ||
-        !countryOfOrigin ||
-        !manufacturerName ||
-        !importerName ||
-        !packerName ||
-        !delivery ||
-        !caseOnDeliveryAvailability ||
-        !returnDetails 
-        
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "Missing fields! All fields are required.",
-        });
-      }
-  
-      const primaryImage1File = req.files.find(f => f.fieldname === 'primaryImage1');
-      const primaryImage2File = req.files.find(f => f.fieldname === 'primaryImage2');
-      
-      let primaryImage1 = null;
-      let primaryImage2 = null;
-      
-      if (primaryImage1File) {
-        const result1 = await cloudinary.uploader.upload(
-          `data:${primaryImage1File.mimetype};base64,${primaryImage1File.buffer.toString('base64')}`,
-          { folder: "project_files", resource_type: "auto" }
-        );
-        primaryImage1 = result1.secure_url;
-      }
-      
-      if (primaryImage2File) {
-        const result2 = await cloudinary.uploader.upload(
-          `data:${primaryImage2File.mimetype};base64,${primaryImage2File.buffer.toString('base64')}`,
-          { folder: "project_files", resource_type: "auto" }
-        );
-        primaryImage2 = result2.secure_url;
-      }
+    // 1️⃣ Auth check
+    const user = await client.user.findFirst({ where: { id: userId } });
+    if (!user) return res.status(400).json({ success: false, message: "No user exists with this ID" });
+    if (user.role === "USER") return res.status(403).json({ success: false, message: "You have no right to add a product" });
 
-      const product = await client.product.create({
-        data: {
-          name, description, shortDescription, material, dimensions,
-          originalPrice: Number(originalPrice),
-          discountPrice: Number(discountPrice),
-          type ,
-          tags: tags ? (typeof tags === "string" ? JSON.parse(tags) : tags) : [],
-          weight: parseFloat(weight),
-          packageContent, care, countryOfOrigin,
-          manufacturerName, packerName, importerName,
-          delivery, caseOnDeliveryAvailability: caseOnDeliveryAvailability === "true",
-          returnDetails, 
-          categoryId: categoryId,
-          primaryImage1, primaryImage2 ,
-          totalCount  : Number(totalCount)
-        }
-      });
+    // 2️⃣ Destructure body
+    const {
+      name, description, shortDescription, originalPrice, discountPrice,
+      type, tags, material, dimensions, weight, packageContent, care,
+      countryOfOrigin, manufacturerName, packerName, importerName,
+      delivery, caseOnDeliveryAvailability, returnDetails,
+      colors, modelImageDescriptions, totalCount,
+      highlights, keyFeatures,          // new optional fields
+    } = req.body;
 
-      
-      const parsedDescriptions =
-  typeof modelImageDescriptions === "string"
-    ? JSON.parse(modelImageDescriptions)
-    : modelImageDescriptions || [];
-
-// Upload model images in parallel
-const modelImageFiles = req.files.filter(f => f.fieldname === "modelImages");
-
-const modelImageUploads = modelImageFiles.map(async (file, i) => {
-  const result = await cloudinary.uploader.upload(
-    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
-    { folder: "project_files", resource_type: "auto" }
-  );
-
-  return {
-    url: result.secure_url,
-    altText: file.originalname,
-    description: parsedDescriptions[i] || "Model Image",
-    productId: product.id
-  };
-});
-
-const modelImageData = await Promise.all(modelImageUploads);
-
-if (modelImageData.length > 0) {
-  await client.productImages.createMany({
-    data: modelImageData
-  });
-}
-
-
-const parsedColors =
-typeof colors === "string" ? JSON.parse(colors) : colors || [];
-
-// Upload colors in parallel
-const colorUploads = parsedColors.map(async (color) => {
-const colorFiles = req.files.filter(f =>
-  f.fieldname.startsWith(`color_${color.name}_image`)
-);
-
-const uploadPromises = colorFiles.map(file =>
-  cloudinary.uploader.upload(
-    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
-    { folder: "project_files", resource_type: "auto" }
-  )
-);
-
-const uploadResults = await Promise.all(uploadPromises);
-const images = uploadResults.map(r => r.secure_url);
-
-return {
-  name: color.name,
-  hex: color.hex,
-  productId: product.id,
-  colorImage1: images[0] || null,
-  colorImage2: images[1] || null,
-  colorImage3: images[2] || null,
-  colorImage4: images[3] || null,
-  colorImage5: images[4] || null
-};
-});
-
-const colorData = await Promise.all(colorUploads);
-
-if (colorData.length > 0) {
-await client.productColor.createMany({
-  data: colorData
-});
-}
-
-      const fullProduct = await client.product.findUnique({
-        where: { id: product.id },
-        include: { colors: true, images: true}
-      });
-  
-      
-
-      return res.status(201).json({
-        success: true,
-        message: "Product created successfully",
-        product: fullProduct,
-      });
-    } catch (e) {
-      console.error(e);
-      return res.status(500).json({
-        success: false,
-        message: "Error while adding product. Please try again later!",
-      });
+    // 3️⃣ Validate required fields
+    const required = { name, description, originalPrice, discountPrice, material, dimensions, weight, packageContent, care, countryOfOrigin, manufacturerName, importerName, packerName, delivery, caseOnDeliveryAvailability, returnDetails };
+    const missing = Object.entries(required).filter(([, v]) => !v).map(([k]) => k);
+    if (missing.length) {
+      return res.status(400).json({ success: false, message: `Missing required fields: ${missing.join(', ')}` });
     }
+
+    // 4️⃣ Upload ALL images in parallel (primary + model + color images)
+    const primaryImage1File = req.files?.find(f => f.fieldname === 'primaryImage1');
+    const primaryImage2File = req.files?.find(f => f.fieldname === 'primaryImage2');
+    const modelImageFiles   = req.files?.filter(f => f.fieldname === 'modelImages') || [];
+
+    const parsedColors       = typeof colors === 'string' ? JSON.parse(colors) : (colors || []);
+    const parsedDescriptions = typeof modelImageDescriptions === 'string' ? JSON.parse(modelImageDescriptions) : (modelImageDescriptions || []);
+
+    // Helper: upload a single buffer to Cloudinary
+    const uploadBuffer = (file) =>
+      cloudinary.uploader.upload(
+        `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+        { folder: 'project_files', resource_type: 'auto' }
+      );
+
+    // Kick off ALL uploads simultaneously
+    const [primary1Result, primary2Result, modelResults, ...colorResultGroups] = await Promise.all([
+      primaryImage1File ? uploadBuffer(primaryImage1File) : Promise.resolve(null),
+      primaryImage2File ? uploadBuffer(primaryImage2File) : Promise.resolve(null),
+      Promise.all(modelImageFiles.map(uploadBuffer)),
+      ...parsedColors.map((color) => {
+        const colorFiles = req.files?.filter(f => f.fieldname.startsWith(`color_${color.name}_image`)) || [];
+        return Promise.all(colorFiles.map(uploadBuffer));
+      }),
+    ]);
+
+    const primaryImage1 = primary1Result?.secure_url || null;
+    const primaryImage2 = primary2Result?.secure_url || null;
+
+    // 5️⃣ Create product
+    const safeParseJSON = (val, fallback) => {
+      if (!val || typeof val !== 'string' || val.trim() === '') return fallback;
+      try { return JSON.parse(val); } catch { return fallback; }
+    };
+
+    const product = await client.product.create({
+      data: {
+        name, description, shortDescription: shortDescription || null,
+        material, dimensions,
+        originalPrice: Number(originalPrice),
+        discountPrice: Number(discountPrice),
+        type: type || null,
+        tags: safeParseJSON(typeof tags === 'string' ? tags : JSON.stringify(tags ?? []), []),
+        weight: parseFloat(weight),
+        packageContent, care, countryOfOrigin,
+        manufacturerName, packerName, importerName,
+        delivery,
+        caseOnDeliveryAvailability: caseOnDeliveryAvailability === 'true',
+        returnDetails,
+        categoryId,
+        primaryImage1, primaryImage2,
+        totalCount: Number(totalCount) || 0,
+        highlights: highlights || null,
+        keyFeatures: keyFeatures || null,
+      },
+    });
+
+    // 6️⃣ Create model images & colors in parallel (now just DB writes, uploads already done)
+    const modelImageData = modelResults.map((result, i) => ({
+      url: result.secure_url,
+      altText: modelImageFiles[i]?.originalname || `image_${i}`,
+      description: parsedDescriptions[i] || 'Model Image',
+      productId: product.id,
+    }));
+
+    const colorData = parsedColors.map((color, ci) => {
+      const urls = (colorResultGroups[ci] || []).map(r => r.secure_url);
+      return {
+        name: color.name,
+        hex: color.hex,
+        productId: product.id,
+        colorImage1: urls[0] || null,
+        colorImage2: urls[1] || null,
+        colorImage3: urls[2] || null,
+        colorImage4: urls[3] || null,
+        colorImage5: urls[4] || null,
+      };
+    });
+
+    // Single parallel DB write for model images + colors
+    await Promise.all([
+      modelImageData.length > 0 ? client.productImages.createMany({ data: modelImageData }) : Promise.resolve(),
+      colorData.length > 0       ? client.productColor.createMany({ data: colorData })       : Promise.resolve(),
+    ]);
+
+    // 7️⃣ Return full product
+    const fullProduct = await client.product.findUnique({
+      where: { id: product.id },
+      include: { colors: true, images: true },
+    });
+
+    return res.status(201).json({ success: true, message: 'Product created successfully', product: fullProduct });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ success: false, message: 'Error while adding product. Please try again later!' });
+  }
 };
   
 
@@ -783,138 +702,222 @@ export const editProductDetails = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    // 1️⃣ Check product
+    // 1️⃣ Verify product exists
     const existingProduct = await client.product.findUnique({
       where: { id: productId },
-      include: { images: true },
+      include: { images: true, colors: true },
     });
 
     if (!existingProduct) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
+      return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    // 2️⃣ Extract body fields
+    // 2️⃣ Destructure body
     const {
-      name,
-      description,
-      shortDescription,
-      originalPrice,
-      discountPrice,
-      type,
-      tags,
-      material,
-      dimensions,
-      weight,
-      packageContent,
-      care,
-      countryOfOrigin,
-      manufacturerName,
-      packerName,
-      importerName,
-      delivery,
-      caseOnDeliveryAvailability,
-      returnDetails,
-      categoryId,
-      totalCount,
-      replaceModelImages // "true" | "false"
+      name, description, shortDescription,
+      originalPrice, discountPrice,
+      type, tags, material, dimensions, weight,
+      packageContent, care, countryOfOrigin,
+      manufacturerName, packerName, importerName,
+      delivery, caseOnDeliveryAvailability, returnDetails,
+      categoryId, totalCount,
+      replaceModelImages,
+      highlights, keyFeatures,
+      deleteColorIds,
+      updateColors,
+      addColors,
     } = req.body;
 
-    // 3️⃣ Build update object dynamically
-    const updateData = {
-      ...(name && { name }),
-      ...(description && { description }),
-      ...(shortDescription && { shortDescription }),
-      ...(originalPrice && { originalPrice: Number(originalPrice) }),
-      ...(discountPrice && { discountPrice: Number(discountPrice) }),
-      ...(type && { type }),
-      ...(material && { material }),
-      ...(dimensions && { dimensions }),
-      ...(weight && { weight: parseFloat(weight) }),
-      ...(packageContent && { packageContent }),
-      ...(care && { care }),
-      ...(countryOfOrigin && { countryOfOrigin }),
-      ...(manufacturerName && { manufacturerName }),
-      ...(packerName && { packerName }),
-      ...(importerName && { importerName }),
-      ...(delivery && { delivery }),
-      ...(returnDetails && { returnDetails }),
-      ...(categoryId && { categoryId }),
-      ...(totalCount && { totalCount: Number(totalCount) }),
-      ...(caseOnDeliveryAvailability !== undefined && {
-        caseOnDeliveryAvailability: caseOnDeliveryAvailability === "true",
-      }),
-      ...(tags && {
-        tags: typeof tags === "string" ? JSON.parse(tags) : tags,
-      }),
+    // 3️⃣ Build product update object
+    const updateData = {};
+
+    if (name !== undefined) updateData.name = name;
+    if (description !== undefined) updateData.description = description;
+    if (shortDescription !== undefined) updateData.shortDescription = shortDescription;
+    if (type !== undefined) updateData.type = type;
+    if (material !== undefined) updateData.material = material;
+    if (dimensions !== undefined) updateData.dimensions = dimensions;
+    if (packageContent !== undefined) updateData.packageContent = packageContent;
+    if (care !== undefined) updateData.care = care;
+    if (countryOfOrigin !== undefined) updateData.countryOfOrigin = countryOfOrigin;
+    if (manufacturerName !== undefined) updateData.manufacturerName = manufacturerName;
+    if (packerName !== undefined) updateData.packerName = packerName;
+    if (importerName !== undefined) updateData.importerName = importerName;
+    if (delivery !== undefined) updateData.delivery = delivery;
+    if (returnDetails !== undefined) updateData.returnDetails = returnDetails;
+    if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (highlights !== undefined) updateData.highlights = highlights;
+    if (keyFeatures !== undefined) updateData.keyFeatures = keyFeatures;
+
+    if (originalPrice !== undefined) updateData.originalPrice = Number(originalPrice);
+    if (discountPrice !== undefined) updateData.discountPrice = Number(discountPrice);
+    if (weight !== undefined) updateData.weight = parseFloat(weight);
+    if (totalCount !== undefined) updateData.totalCount = Number(totalCount);
+
+    if (caseOnDeliveryAvailability !== undefined) {
+      updateData.caseOnDeliveryAvailability = caseOnDeliveryAvailability === 'true';
+    }
+
+    
+    // 4️⃣ Safe JSON parser
+    const safeParseJSON = (val, fallback = []) => {
+      if (!val || typeof val !== 'string' || val.trim() === '') return fallback;
+      try {
+        return JSON.parse(val);
+      } catch {
+        return fallback;
+      }
     };
 
-    // 4️⃣ Upload primary images if provided
-    const primaryImage1File = req.files?.find(f => f.fieldname === "primaryImage1");
-    const primaryImage2File = req.files?.find(f => f.fieldname === "primaryImage2");
-
-    if (primaryImage1File) {
-      const upload = await cloudinary.uploader.upload(
-        `data:${primaryImage1File.mimetype};base64,${primaryImage1File.buffer.toString("base64")}`,
-        { folder: "project_files" }
-      );
-      updateData.primaryImage1 = upload.secure_url;
+    if (tags !== undefined) {
+      // FIXED — safe against undefined, null, "", and malformed JSON
+updateData.tags = safeParseJSON(typeof tags === 'string' ? tags : JSON.stringify(tags ?? []), []);
     }
 
-    if (primaryImage2File) {
-      const upload = await cloudinary.uploader.upload(
-        `data:${primaryImage2File.mimetype};base64,${primaryImage2File.buffer.toString("base64")}`,
-        { folder: "project_files" }
-      );
-      updateData.primaryImage2 = upload.secure_url;
-    }
 
-    // 5️⃣ Update product core details
-    await client.product.update({
-      where: { id: productId },
-      data: updateData,
+    const toDeleteIds = safeParseJSON(deleteColorIds);
+    const toUpdateColors = safeParseJSON(updateColors);
+    const toAddColors = safeParseJSON(addColors);
+
+    // Upload helper
+    const uploadBuffer = (file) =>
+      cloudinary.uploader.upload(
+        `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+        { folder: 'project_files', resource_type: 'auto' }
+      );
+
+    // Files
+    const primaryImage1File = req.files?.find(f => f.fieldname === 'primaryImage1');
+    const primaryImage2File = req.files?.find(f => f.fieldname === 'primaryImage2');
+
+    const modelImageFiles = replaceModelImages === 'true'
+      ? (req.files?.filter(f => f.fieldname === 'modelImages') || [])
+      : [];
+
+    // Update colors
+    const updateColorUploads = toUpdateColors.map(async (color) => {
+      const slotResults = [null, null, null, null, null];
+
+      for (let slot = 0; slot < 5; slot++) {
+        const file = req.files?.find(f => f.fieldname === `updateColor_${color.id}_image${slot}`);
+        if (file) {
+          const r = await uploadBuffer(file);
+          slotResults[slot] = r.secure_url;
+        }
+      }
+
+      return { id: color.id, name: color.name, hex: color.hex, slotUrls: slotResults };
     });
 
-    // 6️⃣ Replace model images (optional)
-    const modelImages = req.files?.filter(f => f.fieldname === "modelImages");
+    // Add colors
+    const addColorUploads = toAddColors.map(async (color) => {
+      const files = req.files?.filter(f =>
+        f.fieldname.startsWith(`color_${color.name}_image`)
+      ) || [];
 
-    if (replaceModelImages === "true" && modelImages?.length) {
-      // delete old images
-      await client.productImages.deleteMany({
-        where: { productId },
-      });
+      const results = await Promise.all(files.map(uploadBuffer));
+      const urls = results.map(r => r.secure_url);
 
-      // add new ones
-      for (const file of modelImages) {
-        const upload = await cloudinary.uploader.upload(
-          `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
-          { folder: "project_files" }
-        );
+      return {
+        name: color.name,
+        hex: color.hex,
+        productId,
+        colorImage1: urls[0] || null,
+        colorImage2: urls[1] || null,
+        colorImage3: urls[2] || null,
+        colorImage4: urls[3] || null,
+        colorImage5: urls[4] || null,
+      };
+    });
 
-        await client.productImages.create({
-          data: {
-            url: upload.secure_url,
-            altText: file.originalname,
-            productId,
-          },
-        });
-      }
+    const [
+      primary1Result,
+      primary2Result,
+      modelResults,
+      resolvedUpdateColors,
+      resolvedNewColors,
+    ] = await Promise.all([
+      primaryImage1File ? uploadBuffer(primaryImage1File) : Promise.resolve(null),
+      primaryImage2File ? uploadBuffer(primaryImage2File) : Promise.resolve(null),
+      modelImageFiles.length > 0
+        ? Promise.all(modelImageFiles.map(uploadBuffer))
+        : Promise.resolve([]),
+      Promise.all(updateColorUploads),
+      Promise.all(addColorUploads),
+    ]);
+
+    if (primary1Result) updateData.primaryImage1 = primary1Result.secure_url;
+    if (primary2Result) updateData.primaryImage2 = primary2Result.secure_url;
+
+    const ops = [];
+
+    ops.push(
+      client.product.update({
+        where: { id: productId },
+        data: updateData,
+      })
+    );
+
+    if (toDeleteIds.length > 0) {
+      ops.push(
+        client.productColor.deleteMany({
+          where: { id: { in: toDeleteIds } },
+        })
+      );
     }
 
-    // 7️⃣ Final product
+    resolvedUpdateColors.forEach(({ id, name, hex, slotUrls }) => {
+      const colorUpdateData = { name, hex };
+
+      if (slotUrls[0]) colorUpdateData.colorImage1 = slotUrls[0];
+      if (slotUrls[1]) colorUpdateData.colorImage2 = slotUrls[1];
+      if (slotUrls[2]) colorUpdateData.colorImage3 = slotUrls[2];
+      if (slotUrls[3]) colorUpdateData.colorImage4 = slotUrls[3];
+      if (slotUrls[4]) colorUpdateData.colorImage5 = slotUrls[4];
+
+      ops.push(
+        client.productColor.update({
+          where: { id },
+          data: colorUpdateData,
+        })
+      );
+    });
+
+    if (resolvedNewColors.length > 0) {
+      ops.push(
+        client.productColor.createMany({
+          data: resolvedNewColors,
+        })
+      );
+    }
+
+    if (replaceModelImages === 'true' && modelResults.length > 0) {
+      ops.push(
+        client.productImages
+          .deleteMany({ where: { productId } })
+          .then(() => {
+            const newImageData = modelResults.map((r, i) => ({
+              url: r.secure_url,
+              altText: modelImageFiles[i]?.originalname || `image_${i}`,
+              description: 'Model Image',
+              productId,
+            }));
+
+            return client.productImages.createMany({ data: newImageData });
+          })
+      );
+    }
+
+    await Promise.all(ops);
+
     const updatedProduct = await client.product.findUnique({
       where: { id: productId },
-      include: {
-        images: true,
-        colors: true,
-      },
+      include: { images: true, colors: true },
     });
 
     return res.status(200).json({
       success: true,
-      message: "Product updated successfully",
+      message: 'Product updated successfully',
       product: updatedProduct,
     });
 
@@ -922,7 +925,7 @@ export const editProductDetails = async (req, res) => {
     console.error(e);
     return res.status(500).json({
       success: false,
-      message: "Error while updating product",
+      message: 'Error while updating product',
     });
   }
 };

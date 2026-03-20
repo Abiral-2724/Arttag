@@ -277,6 +277,100 @@ export const getAllPincode = async(req ,res) => {
     }
 }
 
+export const deletePincode = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const existingPincode = await client.pincode.findFirst({
+        where: { id }
+      });
+  
+      if (!existingPincode) {
+        return res.status(404).json({
+          success: false,
+          message: 'Pincode not found!'
+        });
+      }
+  
+      await client.pincode.delete({
+        where: { id }
+      });
+  
+      return res.status(200).json({
+        success: true,
+        message: 'Pincode deleted successfully'
+      });
+  
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        success: false,
+        message: 'Error deleting pincode, please try again later!'
+      });
+    }
+  };
+  
+  
+  export const addBulkPincodes = async (req, res) => {
+    try {
+      const { pincodes } = req.body;
+  
+      if (!Array.isArray(pincodes) || pincodes.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Please provide a non-empty array of pincodes'
+        });
+      }
+  
+      // Validate all pincodes before doing anything
+      const invalidPincodes = pincodes.filter(p => String(parseInt(p)).length !== 6);
+      if (invalidPincodes.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid pincodes found: ${invalidPincodes.join(', ')}`
+        });
+      }
+  
+      const parsedPincodes = pincodes.map(p => parseInt(p));
+  
+      // Find which ones already exist
+      const existingPincodes = await client.pincode.findMany({
+        where: { pincode: { in: parsedPincodes } },
+        select: { pincode: true }
+      });
+  
+      const existingSet = new Set(existingPincodes.map(p => p.pincode));
+      const newPincodes = parsedPincodes.filter(p => !existingSet.has(p));
+  
+      if (newPincodes.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'All provided pincodes already exist'
+        });
+      }
+  
+      const result = await client.pincode.createMany({
+        data: newPincodes.map(pincode => ({ pincode })),
+        skipDuplicates: true
+      });
+  
+      return res.status(200).json({
+        success: true,
+        message: `${result.count} pincode(s) added successfully`,
+        added: result.count,
+        skipped: pincodes.length - result.count,
+        skippedPincodes: [...existingSet].filter(p => parsedPincodes.includes(p))
+      });
+  
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({
+        success: false,
+        message: 'Error adding pincodes, please try again later!'
+      });
+    }
+  };
+
 // export const addCartItemsAsAGift = async(req ,res) => {
 //     try{
 
