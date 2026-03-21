@@ -13,11 +13,11 @@ router.get('/get/:categoryId/all/subcategory' ,getallSubCategoryOfTheCategory) ;
 
 router.get('/get/all/subcategory' ,getallSubCategory)
 
-router.get('/category/get/:categoryId', getCategoryById);
+router.get('/get/:categoryId', getCategoryById);
 
-router.patch('/category/update/:userId/:categoryId', upload.single('image'), updateCategory);
+router.patch('/update/:userId/:categoryId', upload.single('image'), updateCategory);
 
-router.delete('/category/delete/:userId/:categoryId', deleteCategory);
+router.delete('/delete/:userId/:categoryId', deleteCategory);
 
 
 export default router ;
