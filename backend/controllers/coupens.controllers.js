@@ -309,6 +309,31 @@ export const deletePincode = async (req, res) => {
       });
     }
   };
+
+export const checkallpincode = async(req ,res) => {
+    try{
+        const {pincode} = req.body ; 
+        if(String(pincode).length !== 6){
+            return res.status(400).json({
+                success : false ,
+                message : 'invalid picode , please enter the correct pincode'
+            })
+        }
+       
+       return res.status(200).json({
+        success : true ,
+        message : 'Pincode added successfully' , 
+        pincode : pincode
+    })
+
+    }catch(e){
+        console.log(e) ; 
+        return res.status(500).json({
+            success : false ,
+            message : 'error adding pincode ,please try again later !'
+        })
+    }
+}
   
   
   export const addBulkPincodes = async (req, res) => {
