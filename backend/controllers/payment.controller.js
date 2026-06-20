@@ -124,41 +124,36 @@ export const placingOrderOfProduct = async(req, res) => {
         let order;
 
         if (paymentType === 'ONLINE' && razorpayOrderId) {
-            // ✅ UPDATE existing order instead of creating new one
             order = await client.order.findFirst({
                 where: { razorpayOrderId: razorpayOrderId }
             });
-
+        
             if (!order) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Order not found'
-                });
+                return res.status(404).json({ success: false, message: 'Order not found' });
             }
-
-            // Update order with final details
+        
             order = await client.order.update({
                 where: { id: order.id },
                 data: {
                     totalAmount: totalAmount,
                     orderStatus: 'CONFIRMED',
-                    paymentStatus: 'PAID'
+                    paymentStatus: 'PAID',
+                    addressId: addressId
                 }
             });
-
+        
         } else {
-            // ✅ Only create NEW order for COD
             order = await client.order.create({
                 data: {
                     userId: userId,
                     totalAmount: totalAmount,
                     paymentMethod: 'COD',
                     paymentStatus: 'PENDING',
-                    orderStatus: 'CONFIRMED'
+                    orderStatus: 'CONFIRMED',
+                    addressId: addressId
                 }
             });
-
-            // Create payment record for COD
+        
             await client.payment.create({
                 data: {
                     orderId: order.id,
@@ -212,6 +207,7 @@ export const getUserOrders = async(req, res) => {
         const orders = await client.order.findMany({
             where: { userId: userId },
             include: {
+                address: true,
                 items: {
                     include: {
                         product: {
@@ -257,6 +253,15 @@ export const getOrderById = async(req, res) => {
         const order = await client.order.findUnique({
             where: { id: orderId },
             include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phoneNumber: true
+                    }
+                },
+                address: true,
                 items: {
                     include: {
                         product: true
@@ -511,6 +516,15 @@ export const getAllOrders = async(req, res) => {
         const orders = await client.order.findMany({
             where,
             include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phoneNumber: true
+                    }
+                },
+                address: true,
                 items: {
                     include: {
                         product: {
@@ -563,24 +577,20 @@ export const getAllRefundRequests = async(req, res) => {
             include: {
                 order: {
                     include: {
+                        user: {
+                            select: { id: true, name: true, email: true, phoneNumber: true }
+                        },
+                        address: true,
                         items: {
                             include: {
-                                product: {
-                                    select: {
-                                        id: true,
-                                        name: true,
-                                        primaryImage1: true
-                                    }
-                                }
+                                product: { select: { id: true, name: true, primaryImage1: true } }
                             }
                         },
                         payment: true
                     }
                 }
             },
-            orderBy: {
-                createdAt: 'desc'
-            }
+            orderBy: { createdAt: 'desc' }
         });
 
         return res.status(200).json({

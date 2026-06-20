@@ -79,6 +79,8 @@ model Address {
   locality      String
   landmark      String?
   GSTIN         String?
+
+  orders Order[]
 }
 
 model Category {
@@ -291,10 +293,12 @@ model Order {
   orderStatus     OrderStatus
   razorpayOrderId String?
   deliveryDate DateTime?
+  addressId       String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
 user User @relation(fields: [userId] ,references: [id])
+address Address? @relation(fields: [addressId], references: [id])
   payment Payment?
   items   OrderItem[]
   refunds Refund[]
