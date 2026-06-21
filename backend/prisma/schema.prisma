@@ -363,7 +363,10 @@ model Return {
   amount Int
   status ReturnStatus
   createdAt        DateTime @default(now())
-
+approvedAt  DateTime?
+  rejectedAt  DateTime?
+  pickedAt    DateTime?
+  refundedAt  DateTime?
   order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
