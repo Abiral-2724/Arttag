@@ -298,6 +298,13 @@ export const initiateRefund   = async (req, res) => {
           skip,
           take: Number(limit),
           include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                primaryImage1: true
+              }
+            },
             order: {
               include: {
                 user: {
@@ -307,7 +314,8 @@ export const initiateRefund   = async (req, res) => {
                     email: true,
                     phoneNumber: true
                   }
-                }
+                },
+                address: true
               }
             }
           },
