@@ -174,6 +174,67 @@ export const getAllCoupens = async(req ,res) => {
     }
 }
 
+export const deleteCoupon = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const coupon = await client.couponsCode.findFirst({ where: { id } });
+      if (!coupon) {
+        return res.status(404).json({ success: false, message: 'Coupon not found' });
+      }
+  
+      await client.couponsCode.delete({ where: { id } });
+  
+      return res.status(200).json({ success: true, message: 'Coupon deleted successfully' });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({ success: false, message: 'Error deleting coupon, please try again later!' });
+    }
+  };
+  
+  export const editCoupon = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { code, discountPercentage, minOrderAmount, validFrom, validUntil, isActive } = req.body;
+  
+      const coupon = await client.couponsCode.findFirst({ where: { id } });
+      if (!coupon) {
+        return res.status(404).json({ success: false, message: 'Coupon not found' });
+      }
+  
+      // If code is being changed, check uniqueness
+      if (code) {
+        const modifiedCode = code.trim().toUpperCase();
+        if (modifiedCode.length < 6) {
+          return res.status(400).json({ success: false, message: 'Code must be min 6 characters' });
+        }
+        const existing = await client.couponsCode.findFirst({
+          where: { code: modifiedCode, NOT: { id } }
+        });
+        if (existing) {
+          return res.status(400).json({ success: false, message: 'Code already exists, please enter a unique code' });
+        }
+      }
+  
+      const updated = await client.couponsCode.update({
+        where: { id },
+        data: {
+          ...(code              && { code: code.trim().toUpperCase() }),
+          ...(discountPercentage !== undefined && { discountPercentage }),
+          ...(minOrderAmount     !== undefined && { minOrderAmount }),
+          ...(validFrom          && { validFrom: new Date(validFrom) }),
+          ...(validUntil         && { validUntil: new Date(validUntil) }),
+          ...(isActive           !== undefined && { isActive }),
+        },
+      });
+  
+      return res.status(200).json({ success: true, message: 'Coupon updated successfully', coupon: updated });
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({ success: false, message: 'Error updating coupon, please try again later!' });
+    }
+  };
+
 export const addPincode = async(req ,res) => {
     try{
         const {pincode} = req.body ; 
