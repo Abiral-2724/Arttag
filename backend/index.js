@@ -15,6 +15,7 @@ import returnRoute from './routes/return.routes.js'
 import storeRoute from './routes/store.routes.js'
 import corporateRoute from './routes/corporate.routes.js'
 import blogRoute from './routes/blog.routes.js'
+import analyticsRoute from './routes/analytics.routes.js' ;
 const app = express() ; 
 
 dotenv.config({}) ; 
@@ -81,7 +82,9 @@ app.use('/api/v1/store' ,storeRoute) ;
 
 app.use('/api/v1/corporate' ,corporateRoute) ; 
 
-app.use('/api/v1/blog' ,blogRoute)
+app.use('/api/v1/blog' ,blogRoute) ;
+
+app.use('/api/v1/analytics', analyticsRoute);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ 
